@@ -9,11 +9,36 @@
 <body class="bg-gray-100">
     <div class="container mx-auto px-4 py-8">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-gray-800">Clientes</h1>
-            <button onclick="window.location.href='{{ route('clientes.create') }}'" 
-                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                Nuevo Cliente
-            </button>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">Clientes</h1>
+            </div>
+            <div class="flex space-x-4">
+                <a href="{{ route('exportar') }}" 
+                   class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                    Exportar CSV
+                </a>
+                <button onclick="document.getElementById('importForm').classList.toggle('hidden')"
+                        class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
+                    Importar CSV
+                </button>
+                <button onclick="window.location.href='{{ route('clientes.create') }}'" 
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Nuevo Cliente
+                </button>
+            </div>
+        </div>
+
+        <div id="importForm" class="hidden mb-6 p-4 bg-white rounded-lg shadow">
+            <form action="{{ route('importar') }}" method="POST" enctype="multipart/form-data" class="flex items-center space-x-4">
+                @csrf
+                <input type="file" name="archivo" accept=".csv,.txt" required
+                       class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
+                              file:rounded-full file:border-0 file:text-sm file:font-semibold
+                              file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Subir Archivo
+                </button>
+            </form>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
