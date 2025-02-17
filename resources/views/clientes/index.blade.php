@@ -11,11 +11,34 @@
         <div class="flex justify-between items-center mb-6">
             <div>
                 <h1 class="text-2xl font-bold text-gray-800">Clientes</h1>
-                <div class="mt-4">
+                <div class="mt-4 space-y-4">
                     <input type="text" 
                            id="buscadorClientes" 
-                           placeholder="Buscar clientes..." 
+                           placeholder="Buscar por nombre, email o empresa..." 
                            class="w-full md:w-96 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <div class="flex flex-wrap gap-4">
+                        <select id="filtroProyectos" 
+                                class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="todos">Todos los clientes</option>
+                            <option value="mas3">> 3 proyectos</option>
+                            <option value="menos3">< 3 proyectos</option>
+                        </select>
+                        
+                        <select id="filtroEstado" 
+                                class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="todos">Cualquier estado</option>
+                            <option value="completado">Con proyectos completados</option>
+                            <option value="en_progreso">Con proyectos en progreso</option>
+                            <option value="cancelado">Con proyectos cancelados</option>
+                        </select>
+                        
+                        <select id="filtroOrden" 
+                                class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="nombre">Ordenar por nombre</option>
+                            <option value="proyectos">Ordenar por nº proyectos</option>
+                            <option value="recientes">Más recientes</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class="flex space-x-4">
@@ -49,7 +72,11 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             @foreach($clientes as $cliente)
-            <div class="bg-white rounded-lg shadow-md p-6" data-cliente-id="{{ $cliente->id }}">
+            <div class="bg-white rounded-lg shadow-md p-6" 
+                 data-cliente-id="{{ $cliente->id }}"
+                 data-num-proyectos="{{ $cliente->proyectos->count() }}"
+                 data-estados="{{ json_encode($cliente->proyectos->pluck('estado')->unique()->values()) }}"
+                 data-fecha="{{ $cliente->created_at }}">
                 <div class="flex justify-between items-start mb-4">
                     <div>
                         <h2 class="text-xl font-semibold">{{ $cliente->nombre }} {{ $cliente->apellido }}</h2>
@@ -86,28 +113,82 @@
     </div>
 
     <script>
-        // Función para filtrar clientes
-        function filtrarClientes(searchTerm) {
+        // Función para aplicar todos los filtros
+        function aplicarFiltros() {
             const cards = document.querySelectorAll('.grid > div');
-            searchTerm = searchTerm.toLowerCase();
+            const searchTerm = document.getElementById('buscadorClientes').value.toLowerCase();
+            const filtroProyectos = document.getElementById('filtroProyectos').value;
+            const filtroEstado = document.getElementById('filtroEstado').value;
+            const filtroOrden = document.getElementById('filtroOrden').value;
             
             cards.forEach(card => {
                 const nombre = card.querySelector('h2').textContent.toLowerCase();
                 const email = card.querySelector('.text-gray-600').textContent.toLowerCase();
                 const empresa = card.querySelector('.text-gray-500').textContent.toLowerCase();
+                const numProyectos = parseInt(card.getAttribute('data-num-proyectos')) || 0;
+                const estados = JSON.parse(card.getAttribute('data-estados') || '[]');
                 
-                if (nombre.includes(searchTerm) || email.includes(searchTerm) || empresa.includes(searchTerm)) {
-                    card.style.display = '';
-                } else {
-                    card.style.display = 'none';
+                let mostrar = true;
+                
+                // Filtro de búsqueda
+                if (searchTerm) {
+                    // Buscar en nombre del cliente, email y empresa
+                    const nombreCompleto = nombre.toLowerCase();
+                    const emailCliente = email.toLowerCase();
+                    const nombreEmpresa = empresa.toLowerCase();
+                    
+                    mostrar = nombreCompleto.includes(searchTerm) || 
+                             emailCliente.includes(searchTerm) || 
+                             nombreEmpresa.includes(searchTerm);
+                }
+                
+                // Filtro de número de proyectos
+                if (mostrar && filtroProyectos !== 'todos') {
+                    switch(filtroProyectos) {
+                        case 'mas3':
+                            mostrar = numProyectos > 3;
+                            break;
+                        case 'menos3':
+                            mostrar = numProyectos < 3;
+                            break;
+                    }
+                }
+                
+                // Filtro de estado de proyectos
+                if (mostrar && filtroEstado !== 'todos') {
+                    mostrar = estados.includes(filtroEstado);
+                }
+                
+                card.style.display = mostrar ? '' : 'none';
+            });
+            
+            // Ordenar las tarjetas
+            const grid = document.querySelector('.grid');
+            const cardsArray = Array.from(cards);
+            
+            cardsArray.sort((a, b) => {
+                switch(filtroOrden) {
+                    case 'nombre':
+                        return a.querySelector('h2').textContent.localeCompare(b.querySelector('h2').textContent);
+                    case 'proyectos':
+                        return (parseInt(b.getAttribute('data-num-proyectos')) || 0) - 
+                               (parseInt(a.getAttribute('data-num-proyectos')) || 0);
+                    case 'recientes':
+                        return new Date(b.getAttribute('data-fecha')) - 
+                               new Date(a.getAttribute('data-fecha'));
+                    default:
+                        return 0;
                 }
             });
+            
+            cardsArray.forEach(card => grid.appendChild(card));
         }
 
-        // Buscador de texto
-        document.getElementById('buscadorClientes').addEventListener('input', (e) => {
-            filtrarClientes(e.target.value);
-        });
+        // Eventos para los filtros
+        document.getElementById('buscadorClientes').addEventListener('input', aplicarFiltros);
+        document.getElementById('filtroProyectos').addEventListener('change', aplicarFiltros);
+        document.getElementById('filtroEstado').addEventListener('change', aplicarFiltros);
+        document.getElementById('filtroOrden').addEventListener('change', aplicarFiltros);
 
         function eliminarCliente(clienteId) {
             if (confirm('¿Estás seguro de que deseas eliminar este cliente? Se eliminarán también todos sus proyectos.')) {
