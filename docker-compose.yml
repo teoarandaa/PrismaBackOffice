@@ -1,0 +1,42 @@
+services:
+    app:
+        build:
+            context: .
+            dockerfile: dockerfile
+        ports:
+            - "8000:80"
+        volumes:
+            - .:/var/www/html
+        depends_on:
+            - db
+        environment:
+            DB_HOST: db
+            DB_DATABASE: prismabackoffice
+            DB_USERNAME: prismauser
+            DB_PASSWORD: secret
+
+    db:
+        image: mysql:8.0
+        platform: linux/arm64/v8  # Específico para Mac M1/M2
+        ports:
+            - "3306:3306"
+        environment:
+            MYSQL_DATABASE: prismabackoffice
+            MYSQL_USER: prismauser
+            MYSQL_PASSWORD: secret
+            MYSQL_ROOT_PASSWORD: rootsecret
+        volumes:
+            - mysql_data:/var/lib/mysql
+
+    phpmyadmin:
+        image: arm64v8/phpmyadmin  # Imagen compatible con Mac M1/M2
+        ports:
+            - "8080:80"
+        environment:
+            PMA_HOST: db
+            MYSQL_ROOT_PASSWORD: rootsecret
+        depends_on:
+            - db
+
+volumes:
+    mysql_data:
