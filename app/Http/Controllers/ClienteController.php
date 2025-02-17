@@ -26,7 +26,8 @@ class ClienteController extends Controller
 
     public function show(Cliente $cliente)
     {
-        return $cliente;
+        $cliente->load('proyectos');
+        return view('clientes.show', compact('cliente'));
     }
 
     public function update(Request $request, Cliente $cliente)

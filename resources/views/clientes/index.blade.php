@@ -29,6 +29,10 @@
 
                 <div class="border-t pt-4">
                     <div class="flex flex-col space-y-2">
+                        <a href="{{ route('clientes.show', $cliente) }}" 
+                           class="bg-blue-500 hover:bg-blue-700 text-white text-center py-2 px-4 rounded">
+                            Ver Detalles
+                        </a>
                         <a href="{{ route('clientes.proyectos.index', $cliente) }}" 
                            class="bg-green-500 hover:bg-green-700 text-white text-center py-2 px-4 rounded">
                             Ver Proyectos
