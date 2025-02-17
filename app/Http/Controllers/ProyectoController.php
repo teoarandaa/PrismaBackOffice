@@ -128,4 +128,10 @@ class ProyectoController extends Controller
     {
         return view('clientes.proyectos.edit', compact('cliente', 'proyecto'));
     }
+
+    public function todos()
+    {
+        $proyectos = Proyecto::with('cliente')->get();
+        return view('proyectos.todos', compact('proyectos'));
+    }
 } 

@@ -18,3 +18,4 @@ Route::get('/clientes/{cliente}/proyectos/{proyecto}', [ProyectoController::clas
 Route::get('/clientes/{cliente}/proyectos/{proyecto}/edit', [ProyectoController::class, 'edit'])->name('clientes.proyectos.edit');
 Route::get('/exportar', [DataController::class, 'exportar'])->name('exportar');
 Route::post('/importar', [DataController::class, 'importar'])->name('importar');
+Route::get('/proyectos', [ProyectoController::class, 'todos'])->name('proyectos.todos');

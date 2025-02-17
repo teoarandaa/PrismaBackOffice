@@ -42,6 +42,10 @@
                 </div>
             </div>
             <div class="flex space-x-4">
+                <a href="{{ route('proyectos.todos') }}" 
+                   class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                    Ver Todos los Proyectos
+                </a>
                 <a href="{{ route('exportar') }}" 
                    class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                     Exportar CSV
