@@ -16,20 +16,31 @@ class ProyectoController extends Controller
     public function store(Request $request, Cliente $cliente)
     {
         $request->validate([
-            'nombre_proyecto' => 'required',
+            'nombre' => 'required',
             'descripcion' => 'nullable|string',
             'fecha_inicio' => 'nullable|date',
-            'fecha_finalizacion' => 'nullable|date',
-            'estado' => 'nullable|in:En progreso,Completado,Cancelado',
+            'fecha_fin_estimada' => 'nullable|date',
+            'estado' => 'nullable|in:en_progreso,completado,cancelado',
             'presupuesto' => 'nullable|numeric',
             'link' => 'nullable|string'
         ]);
 
-        \Log::info('Datos recibidos:', $request->all());
+        // Transformar los datos recibidos al formato esperado
+        $datos = [
+            'nombre_proyecto' => $request->nombre,
+            'descripcion' => $request->descripcion,
+            'fecha_inicio' => $request->fecha_inicio,
+            'fecha_finalizacion' => $request->fecha_fin_estimada,
+            'presupuesto' => $request->presupuesto,
+            'estado' => $request->estado === 'en_progreso' ? 'En progreso' : ucfirst($request->estado),
+            'link' => $request->link
+        ];
+
+        \Log::info('Datos transformados:', $datos);
         \Log::info('Cliente ID:', ['id' => $cliente->id]);
 
         try {
-            $proyecto = $cliente->proyectos()->create($request->all());
+            $proyecto = $cliente->proyectos()->create($datos);
             
             if (!$proyecto) {
                 return response()->json(['error' => 'No se pudo crear el proyecto'], 500);

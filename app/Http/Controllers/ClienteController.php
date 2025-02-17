@@ -9,7 +9,8 @@ class ClienteController extends Controller
 {
     public function index()
     {
-        return Cliente::all();
+        $clientes = Cliente::with('proyectos')->get();
+        return view('clientes.index', compact('clientes'));
     }
 
     public function store(Request $request)
