@@ -12,6 +12,12 @@
             <div>
                 <h1 class="text-2xl font-bold text-gray-800">Proyectos de {{ $cliente->nombre }} {{ $cliente->apellido }}</h1>
                 <p class="text-gray-600">{{ $cliente->empresa ?: 'Sin empresa' }}</p>
+                <div class="mt-4">
+                    <input type="text" 
+                           id="buscadorProyectos" 
+                           placeholder="Buscar proyectos..." 
+                           class="w-full md:w-96 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
             </div>
             <div class="space-x-4">
                 <button onclick="window.location.href='{{ route('clientes.index') }}'" 
@@ -39,7 +45,7 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @foreach($proyectos as $proyecto)
-                    <tr>
+                    <tr data-proyecto-id="{{ $proyecto->id }}">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-medium text-gray-900">{{ $proyecto->nombre_proyecto }}</div>
                             <div class="text-sm text-gray-500">{{ Str::limit($proyecto->descripcion, 50) }}</div>
@@ -82,6 +88,29 @@
     </div>
 
     <script>
+        // Función para filtrar proyectos
+        function filtrarProyectos(searchTerm) {
+            const rows = document.querySelectorAll('tbody tr');
+            searchTerm = searchTerm.toLowerCase();
+            
+            rows.forEach(row => {
+                const nombre = row.querySelector('td:first-child').textContent.toLowerCase();
+                const estado = row.querySelector('.rounded-full').textContent.toLowerCase();
+                const descripcion = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                
+                if (nombre.includes(searchTerm) || estado.includes(searchTerm) || descripcion.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Buscador de texto
+        document.getElementById('buscadorProyectos').addEventListener('input', (e) => {
+            filtrarProyectos(e.target.value);
+        });
+
         function eliminarProyecto(proyectoId) {
             if (confirm('¿Estás seguro de que deseas eliminar este proyecto?')) {
                 fetch(`/api/clientes/{{ $cliente->id }}/proyectos/${proyectoId}`, {

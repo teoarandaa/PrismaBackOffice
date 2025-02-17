@@ -11,6 +11,12 @@
         <div class="flex justify-between items-center mb-6">
             <div>
                 <h1 class="text-2xl font-bold text-gray-800">Clientes</h1>
+                <div class="mt-4">
+                    <input type="text" 
+                           id="buscadorClientes" 
+                           placeholder="Buscar clientes..." 
+                           class="w-full md:w-96 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
             </div>
             <div class="flex space-x-4">
                 <a href="{{ route('exportar') }}" 
@@ -43,7 +49,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             @foreach($clientes as $cliente)
-            <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="bg-white rounded-lg shadow-md p-6" data-cliente-id="{{ $cliente->id }}">
                 <div class="flex justify-between items-start mb-4">
                     <div>
                         <h2 class="text-xl font-semibold">{{ $cliente->nombre }} {{ $cliente->apellido }}</h2>
@@ -80,6 +86,29 @@
     </div>
 
     <script>
+        // Función para filtrar clientes
+        function filtrarClientes(searchTerm) {
+            const cards = document.querySelectorAll('.grid > div');
+            searchTerm = searchTerm.toLowerCase();
+            
+            cards.forEach(card => {
+                const nombre = card.querySelector('h2').textContent.toLowerCase();
+                const email = card.querySelector('.text-gray-600').textContent.toLowerCase();
+                const empresa = card.querySelector('.text-gray-500').textContent.toLowerCase();
+                
+                if (nombre.includes(searchTerm) || email.includes(searchTerm) || empresa.includes(searchTerm)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Buscador de texto
+        document.getElementById('buscadorClientes').addEventListener('input', (e) => {
+            filtrarClientes(e.target.value);
+        });
+
         function eliminarCliente(clienteId) {
             if (confirm('¿Estás seguro de que deseas eliminar este cliente? Se eliminarán también todos sus proyectos.')) {
                 fetch(`/api/clientes/${clienteId}`, {
