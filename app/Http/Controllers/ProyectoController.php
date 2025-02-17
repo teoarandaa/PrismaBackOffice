@@ -10,7 +10,8 @@ class ProyectoController extends Controller
 {
     public function index(Cliente $cliente)
     {
-        return $cliente->proyectos()->with('cliente')->get();
+        $proyectos = $cliente->proyectos()->with('cliente')->get();
+        return view('clientes.proyectos.index', compact('cliente', 'proyectos'));
     }
 
     public function store(Request $request, Cliente $cliente)

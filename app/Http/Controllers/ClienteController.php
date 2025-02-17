@@ -40,4 +40,14 @@ class ClienteController extends Controller
         $cliente->delete();
         return response()->json(['message' => 'Cliente eliminado']);
     }
+
+    public function create()
+    {
+        return view('clientes.create');
+    }
+
+    public function edit(Cliente $cliente)
+    {
+        return view('clientes.edit', compact('cliente'));
+    }
 } 

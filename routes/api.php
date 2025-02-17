@@ -28,3 +28,5 @@ Route::prefix('clientes/{cliente}/proyectos')->group(function () {
     Route::put('/{proyecto}', [ProyectoController::class, 'update']);
     Route::delete('/{proyecto}', [ProyectoController::class, 'destroy']);
 });
+
+Route::apiResource('clientes', ClienteController::class);
