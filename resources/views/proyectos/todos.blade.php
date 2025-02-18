@@ -122,20 +122,20 @@
 
     <script>
         function aplicarFiltros() {
-            const searchTerm = e.target.value.toLowerCase();
+            const searchTerm = document.getElementById('buscadorProyectos').value.toLowerCase();
             const rows = document.querySelectorAll('tbody tr');
             const filtroEstado = document.getElementById('filtroEstado').value;
             const presupuestoMin = parseFloat(document.getElementById('presupuestoMin').value) || 0;
             const presupuestoMax = parseFloat(document.getElementById('presupuestoMax').value);
-            const fechaInicio = document.getElementById('fechaInicio').value;
-            const fechaFin = document.getElementById('fechaFin').value;
             const filtroOrden = document.getElementById('filtroOrden').value;
             
             rows.forEach(row => {
                 const clienteNombre = row.querySelector('td:first-child').textContent.toLowerCase();
                 const proyectoNombre = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
                 const estado = row.querySelector('td:nth-child(3) span').textContent.trim();
-                const fechaInicioDate = new Date(row.querySelector('td:nth-child(4)').textContent.trim());
+                const fechaTexto = row.querySelector('td:nth-child(4)').textContent.trim();
+                const fechaInicioDate = fechaTexto !== 'No definida' ? 
+                    new Date(fechaTexto.split('/').reverse().join('-')) : null;
                 const presupuesto = parseFloat(row.querySelector('td:nth-child(6)').textContent.replace('€', '').replace('.', '').replace(',', '.'));
                 
                 let mostrar = true;
@@ -160,7 +160,7 @@
                 // Filtro de fecha
                 const fechaInicioFiltro = document.getElementById('fechaInicio').value;
                 const fechaFinFiltro = document.getElementById('fechaFin').value;
-                if (mostrar && (fechaInicioFiltro || fechaFinFiltro)) {
+                if (mostrar && fechaInicioDate && (fechaInicioFiltro || fechaFinFiltro)) {
                     const fechaMinima = new Date(fechaInicioFiltro);
                     mostrar = fechaInicioDate >= fechaMinima;
                     if (fechaFinFiltro && mostrar) {
@@ -179,11 +179,19 @@
             rowsArray.sort((a, b) => {
                 switch(filtroOrden) {
                     case 'recientes':
-                        return new Date(b.querySelector('td:nth-child(4)').textContent) - 
-                               new Date(a.querySelector('td:nth-child(4)').textContent);
+                        const fechaB = b.querySelector('td:nth-child(4)').textContent.trim();
+                        const fechaA = a.querySelector('td:nth-child(4)').textContent.trim();
+                        if (fechaB === 'No definida') return 1;
+                        if (fechaA === 'No definida') return -1;
+                        return new Date(fechaB.split('/').reverse().join('-')) - 
+                               new Date(fechaA.split('/').reverse().join('-'));
                     case 'antiguos':
-                        return new Date(a.querySelector('td:nth-child(4)').textContent) - 
-                               new Date(b.querySelector('td:nth-child(4)').textContent);
+                        const fechaB2 = b.querySelector('td:nth-child(4)').textContent.trim();
+                        const fechaA2 = a.querySelector('td:nth-child(4)').textContent.trim();
+                        if (fechaB2 === 'No definida') return -1;
+                        if (fechaA2 === 'No definida') return 1;
+                        return new Date(fechaA2.split('/').reverse().join('-')) - 
+                               new Date(fechaB2.split('/').reverse().join('-'));
                     case 'presupuesto_alto':
                         return parseFloat(b.querySelector('td:nth-child(6)').textContent.replace('€', '').replace('.', '').replace(',', '.')) - 
                                parseFloat(a.querySelector('td:nth-child(6)').textContent.replace('€', '').replace('.', '').replace(',', '.'));
@@ -210,6 +218,9 @@
         document.getElementById('fechaInicio').addEventListener('change', aplicarFiltros);
         document.getElementById('fechaFin').addEventListener('change', aplicarFiltros);
         document.getElementById('filtroOrden').addEventListener('change', aplicarFiltros);
+
+        // Aplicar filtros iniciales
+        aplicarFiltros();
     </script>
 </body>
 </html> 

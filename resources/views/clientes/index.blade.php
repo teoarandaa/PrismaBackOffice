@@ -43,11 +43,11 @@
             </div>
             <div class="flex space-x-4">
                 <a href="{{ route('proyectos.todos') }}" 
-                   class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                   class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center min-w-[200px] text-center">
                     Ver Todos los Proyectos
                 </a>
                 <a href="{{ route('exportar') }}" 
-                   class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                   class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center min-w-[150px] text-center">
                     Exportar CSV
                 </a>
                 <button onclick="document.getElementById('importForm').classList.toggle('hidden')"
