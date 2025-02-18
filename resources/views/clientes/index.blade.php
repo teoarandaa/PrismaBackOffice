@@ -9,55 +9,78 @@
 <body class="bg-gray-100">
     <div class="container mx-auto px-4 py-8">
         <div class="flex justify-between items-center mb-6">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-800">Clientes</h1>
-                <div class="mt-4 space-y-4">
-                    <input type="text" 
-                           id="buscadorClientes" 
-                           placeholder="Buscar por nombre, email o empresa..." 
-                           class="w-full md:w-96 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <div class="flex flex-wrap gap-4">
-                        <select id="filtroProyectos" 
-                                class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="todos">Todos los clientes</option>
-                            <option value="mas3">> 3 proyectos</option>
-                            <option value="menos3">< 3 proyectos</option>
-                        </select>
-                        
-                        <select id="filtroEstado" 
-                                class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="todos">Cualquier estado</option>
-                            <option value="completado">Con proyectos completados</option>
-                            <option value="en_progreso">Con proyectos en progreso</option>
-                            <option value="cancelado">Con proyectos cancelados</option>
-                        </select>
-                        
-                        <select id="filtroOrden" 
-                                class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="nombre">Ordenar por nombre</option>
-                            <option value="proyectos">Ordenar por nº proyectos</option>
-                            <option value="recientes">Más recientes</option>
-                        </select>
+            <div class="w-full">
+                <div class="flex justify-between items-center">
+                    <h1 class="text-2xl font-bold text-gray-800">Clientes</h1>
+                </div>
+                <div class="mt-4 flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <input type="text" 
+                               id="buscadorClientes" 
+                               placeholder="Buscar por nombre, email o empresa..." 
+                               class="w-96 h-[42px] px-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <div class="relative inline-block text-left">
+                            <button type="button" 
+                                    onclick="toggleFiltros()"
+                                    class="h-[42px] inline-flex items-center px-4 rounded-lg bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 justify-center">
+                                <svg class="h-5 w-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                                Filtros
+                            </button>
+
+                            <div id="menuFiltros" 
+                                 class="hidden origin-top-right absolute right-0 mt-2 w-80 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none z-50">
+                                <div class="p-4">
+                                    <h3 class="text-sm font-medium text-gray-900 mb-3">Número de proyectos</h3>
+                                    <select id="filtroProyectos" 
+                                            class="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="todos">Todos los clientes</option>
+                                        <option value="mas3">> 3 proyectos</option>
+                                        <option value="menos3">< 3 proyectos</option>
+                                    </select>
+                                </div>
+                                <div class="p-4">
+                                    <h3 class="text-sm font-medium text-gray-900 mb-3">Estado de proyectos</h3>
+                                    <select id="filtroEstado" 
+                                            class="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="todos">Cualquier estado</option>
+                                        <option value="Completado">Con proyectos completados</option>
+                                        <option value="En progreso">Con proyectos en progreso</option>
+                                        <option value="Cancelado">Con proyectos cancelados</option>
+                                    </select>
+                                </div>
+                                <div class="p-4">
+                                    <h3 class="text-sm font-medium text-gray-900 mb-3">Ordenar por</h3>
+                                    <select id="filtroOrden" 
+                                            class="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="nombre">Ordenar por nombre</option>
+                                        <option value="proyectos">Ordenar por nº proyectos</option>
+                                        <option value="recientes">Más recientes</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('proyectos.todos') }}" 
+                           class="h-[42px] bg-indigo-500 hover:bg-indigo-700 text-white font-bold px-4 rounded-lg flex items-center justify-center min-w-[200px]">
+                            Ver Todos los Proyectos
+                        </a>
+                        <a href="{{ route('exportar') }}" 
+                           class="h-[42px] bg-green-500 hover:bg-green-700 text-white font-bold px-4 rounded-lg flex items-center justify-center min-w-[150px]">
+                            Exportar CSV
+                        </a>
+                        <button onclick="document.getElementById('importForm').classList.toggle('hidden')"
+                                class="h-[42px] bg-purple-500 hover:bg-purple-700 text-white font-bold px-4 rounded-lg flex items-center justify-center">
+                            Importar CSV
+                        </button>
+                        <button onclick="window.location.href='{{ route('clientes.create') }}'" 
+                                class="h-[42px] bg-blue-500 hover:bg-blue-700 text-white font-bold px-4 rounded-lg flex items-center justify-center">
+                            Nuevo Cliente
+                        </button>
                     </div>
                 </div>
-            </div>
-            <div class="flex space-x-4">
-                <a href="{{ route('proyectos.todos') }}" 
-                   class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center min-w-[200px] text-center">
-                    Ver Todos los Proyectos
-                </a>
-                <a href="{{ route('exportar') }}" 
-                   class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center min-w-[150px] text-center">
-                    Exportar CSV
-                </a>
-                <button onclick="document.getElementById('importForm').classList.toggle('hidden')"
-                        class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
-                    Importar CSV
-                </button>
-                <button onclick="window.location.href='{{ route('clientes.create') }}'" 
-                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Nuevo Cliente
-                </button>
             </div>
         </div>
 
@@ -117,6 +140,20 @@
     </div>
 
     <script>
+        function toggleFiltros() {
+            const menu = document.getElementById('menuFiltros');
+            menu.classList.toggle('hidden');
+            
+            // Cerrar el menú al hacer clic fuera
+            document.addEventListener('click', function(event) {
+                const isClickInside = menu.contains(event.target) || 
+                                    event.target.closest('button')?.contains(event.target);
+                if (!isClickInside && !menu.classList.contains('hidden')) {
+                    menu.classList.add('hidden');
+                }
+            });
+        }
+
         // Función para aplicar todos los filtros
         function aplicarFiltros() {
             const cards = document.querySelectorAll('.grid > div');
