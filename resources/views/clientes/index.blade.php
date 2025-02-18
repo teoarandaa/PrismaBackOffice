@@ -17,6 +17,33 @@
                         <p class="text-gray-600 mt-1">Panel de administración de clientes</p>
                     </div>
                 </div>
+                <div class="flex items-center gap-4">
+                    @if(auth()->user()->is_admin)
+                        <button onclick="window.location.href='{{ route('register') }}'" 
+                                class="h-[42px] bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 rounded-lg flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                            </svg>
+                            Registrar Usuario BackOffice
+                        </button>
+                    @endif
+                    <div class="flex items-center gap-4 border-l pl-4">
+                        <div class="text-right">
+                            <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
+                            <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
+                        </div>
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button type="submit" 
+                                    class="h-[42px] bg-gray-500 hover:bg-gray-700 text-white font-bold px-6 rounded-lg flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                </svg>
+                                Cerrar Sesión
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
             <div class="mt-6 flex justify-between items-center">
                 <div class="flex items-center gap-2">
