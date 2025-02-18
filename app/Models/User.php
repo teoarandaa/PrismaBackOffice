@@ -22,8 +22,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'plain_password',
-        'is_admin',
+        'can_read',
+        'can_edit',
+        'is_admin'
     ];
 
     /**
@@ -33,7 +34,6 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
-        'plain_password',
         'remember_token',
     ];
 
@@ -42,11 +42,10 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'can_read' => 'boolean',
+        'can_edit' => 'boolean',
+        'is_admin' => 'boolean',
+    ];
 }

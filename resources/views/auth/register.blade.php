@@ -47,6 +47,36 @@
                     </div>
                 </div>
 
+                <div class="space-y-4 border-t pt-4">
+                    <h3 class="text-lg font-medium text-gray-900">Permisos del Usuario</h3>
+                    
+                    <div class="space-y-2">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="can_read" name="can_read" class="h-4 w-4 text-blue-600 rounded border-gray-300" checked>
+                            <label for="can_read" class="ml-2 block text-sm text-gray-900">
+                                Permiso de Lectura
+                                <span class="text-xs text-gray-500">(Ver clientes y proyectos)</span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <input type="checkbox" id="can_edit" name="can_edit" class="h-4 w-4 text-blue-600 rounded border-gray-300">
+                            <label for="can_edit" class="ml-2 block text-sm text-gray-900">
+                                Permiso de Edición
+                                <span class="text-xs text-gray-500">(Crear, editar y eliminar clientes y proyectos)</span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <input type="checkbox" id="is_admin" name="is_admin" class="h-4 w-4 text-blue-600 rounded border-gray-300">
+                            <label for="is_admin" class="ml-2 block text-sm text-gray-900">
+                                Administrador
+                                <span class="text-xs text-gray-500">(Gestión completa del sistema, incluyendo usuarios)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
                 @if ($errors->any())
                     <div class="text-red-500 text-sm">
                         <ul>

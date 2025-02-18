@@ -84,24 +84,22 @@ class AuthController extends Controller
 
     public function webRegister(Request $request)
     {
-        if (!auth()->user()->is_admin) {
-            abort(403);
-        }
-
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'plain_password' => $request->password,
+            'can_read' => $request->has('can_read'),
+            'can_edit' => $request->has('can_edit'),
+            'is_admin' => $request->has('is_admin'),
         ]);
 
-        return redirect('/clientes')->with('success', 'Usuario registrado correctamente');
+        return redirect()->route('users.index')->with('success', 'Usuario creado exitosamente');
     }
 
     public function webLogout(Request $request)
@@ -110,5 +108,30 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/login');
+    }
+
+    public function webUpdate(Request $request, User $user)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
+
+        $userData = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'can_read' => $request->has('can_read'),
+            'can_edit' => $request->has('can_edit'),
+            'is_admin' => $request->has('is_admin'),
+        ];
+
+        if ($request->filled('password')) {
+            $userData['password'] = Hash::make($request->password);
+        }
+
+        $user->update($userData);
+
+        return redirect()->route('users.index')->with('success', 'Usuario actualizado exitosamente');
     }
 } 
