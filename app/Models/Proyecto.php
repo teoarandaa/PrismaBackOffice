@@ -20,6 +20,8 @@ class Proyecto extends Model
         'link'
     ];
 
+    protected $table = 'proyectos';
+
     public function cliente()
     {
         return $this->belongsTo(Cliente::class, 'id_cliente');

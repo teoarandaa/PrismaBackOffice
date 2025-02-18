@@ -93,22 +93,28 @@
                 link: document.getElementById('link').value
             };
 
-            fetch('/api/clientes/{{ $cliente->id }}/proyectos', {
+            fetch('{{ route("clientes.proyectos.store", $cliente) }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify(formData)
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => Promise.reject(err));
+                }
+                return response.json();
+            })
             .then(data => {
-                alert('Proyecto creado correctamente');
-                window.location.href = '{{ route('clientes.proyectos.index', $cliente) }}';
+                alert(data.message);
+                window.location.href = '{{ route("clientes.proyectos.index", $cliente) }}';
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error al crear el proyecto');
+                alert(error.message || 'Error al crear el proyecto');
             });
         });
     </script>

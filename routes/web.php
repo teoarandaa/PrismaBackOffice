@@ -29,11 +29,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/clientes/{cliente}/edit', [ClienteController::class, 'edit'])->name('clientes.edit');
     Route::put('/clientes/{cliente}', [ClienteController::class, 'update'])->name('clientes.update');
     Route::delete('/clientes/{cliente}', [ClienteController::class, 'destroy'])->name('clientes.destroy');
-    Route::get('/clientes/{cliente}/proyectos', [ProyectoController::class, 'index'])->name('clientes.proyectos.index');
-    Route::get('/clientes/{cliente}/proyectos/create', [ProyectoController::class, 'create'])->name('clientes.proyectos.create');
-    Route::get('/clientes/{cliente}/proyectos/{proyecto}', [ProyectoController::class, 'show'])->name('clientes.proyectos.show');
-    Route::get('/clientes/{cliente}/proyectos/{proyecto}/edit', [ProyectoController::class, 'edit'])->name('clientes.proyectos.edit');
+
+    // Rutas de proyectos
     Route::get('/proyectos', [ProyectoController::class, 'todos'])->name('proyectos.todos');
+
+    Route::prefix('clientes/{cliente}/proyectos')->name('clientes.proyectos.')->group(function () {
+        Route::get('/', [ProyectoController::class, 'index'])->name('index');
+        Route::get('/create', [ProyectoController::class, 'create'])->name('create');
+        Route::post('/', [ProyectoController::class, 'store'])->name('store');
+        Route::get('/{proyecto}', [ProyectoController::class, 'show'])->name('show');
+        Route::get('/{proyecto}/edit', [ProyectoController::class, 'edit'])->name('edit');
+        Route::put('/{proyecto}', [ProyectoController::class, 'update'])->name('update');
+        Route::delete('/{proyecto}', [ProyectoController::class, 'destroy'])->name('destroy');
+    });
 
     // Rutas de importación/exportación
     Route::get('/exportar', [DataController::class, 'exportar'])->name('exportar');

@@ -17,50 +17,35 @@ class ProyectoController extends Controller
     public function store(Request $request, Cliente $cliente)
     {
         $request->validate([
-            'nombre' => 'required',
+            'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'fecha_inicio' => 'nullable|date',
             'fecha_fin_estimada' => 'nullable|date',
-            'estado' => 'nullable|in:en_progreso,completado,cancelado',
+            'estado' => 'required|in:en_progreso,completado,cancelado',
             'presupuesto' => 'nullable|numeric',
-            'link' => 'nullable|string'
+            'link' => 'nullable|url'
         ]);
 
-        // Transformar los datos recibidos al formato esperado
-        $datos = [
-            'nombre_proyecto' => $request->nombre,
-            'descripcion' => $request->descripcion,
-            'fecha_inicio' => $request->fecha_inicio,
-            'fecha_finalizacion' => $request->fecha_fin_estimada,
-            'presupuesto' => $request->presupuesto,
-            'estado' => $request->estado === 'en_progreso' ? 'En progreso' : ucfirst($request->estado),
-            'link' => $request->link
-        ];
-
-        \Log::info('Datos transformados:', $datos);
-        \Log::info('Cliente ID:', ['id' => $cliente->id]);
-
         try {
-            $proyecto = $cliente->proyectos()->create($datos);
-            
-            if (!$proyecto) {
-                return response()->json(['error' => 'No se pudo crear el proyecto'], 500);
-            }
+            $proyecto = $cliente->proyectos()->create([
+                'nombre_proyecto' => $request->nombre,
+                'descripcion' => $request->descripcion,
+                'fecha_inicio' => $request->fecha_inicio,
+                'fecha_finalizacion' => $request->fecha_fin_estimada,
+                'presupuesto' => $request->presupuesto,
+                'estado' => $request->estado === 'en_progreso' ? 'En progreso' : ucfirst($request->estado),
+                'link' => $request->link
+            ]);
 
-            \Log::info('Proyecto creado:', $proyecto->toArray());
             return response()->json([
                 'message' => 'Proyecto creado exitosamente',
                 'data' => $proyecto
             ], 201);
         } catch (\Exception $e) {
-            \Log::error('Error al crear proyecto:', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
+            \Log::error('Error al crear proyecto: ' . $e->getMessage());
             return response()->json([
-                'error' => 'Error al crear el proyecto',
-                'message' => $e->getMessage()
+                'message' => 'Error al crear el proyecto',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -73,50 +58,52 @@ class ProyectoController extends Controller
     public function update(Request $request, Cliente $cliente, Proyecto $proyecto)
     {
         $request->validate([
-            'nombre' => 'required',
+            'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'fecha_inicio' => 'nullable|date',
             'fecha_fin_estimada' => 'nullable|date',
-            'estado' => 'nullable|in:en_progreso,completado,cancelado',
+            'estado' => 'required|in:en_progreso,completado,cancelado',
             'presupuesto' => 'nullable|numeric',
-            'link' => 'nullable|string'
+            'link' => 'nullable|url'
         ]);
 
-        // Transformar los datos recibidos al formato esperado
-        $datos = [
-            'nombre_proyecto' => $request->nombre,
-            'descripcion' => $request->descripcion,
-            'fecha_inicio' => $request->fecha_inicio,
-            'fecha_finalizacion' => $request->fecha_fin_estimada,
-            'presupuesto' => $request->presupuesto,
-            'estado' => $request->estado === 'en_progreso' ? 'En progreso' : ucfirst($request->estado),
-            'link' => $request->link
-        ];
-
         try {
-            $proyecto->update($datos);
-            
+            $proyecto->update([
+                'nombre_proyecto' => $request->nombre,
+                'descripcion' => $request->descripcion,
+                'fecha_inicio' => $request->fecha_inicio,
+                'fecha_finalizacion' => $request->fecha_fin_estimada,
+                'presupuesto' => $request->presupuesto,
+                'estado' => $request->estado === 'en_progreso' ? 'En progreso' : ucfirst($request->estado),
+                'link' => $request->link
+            ]);
+
             return response()->json([
                 'message' => 'Proyecto actualizado exitosamente',
                 'data' => $proyecto
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error al actualizar proyecto:', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
+            \Log::error('Error al actualizar proyecto: ' . $e->getMessage());
             return response()->json([
-                'error' => 'Error al actualizar el proyecto',
-                'message' => $e->getMessage()
+                'message' => 'Error al actualizar el proyecto',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
     public function destroy(Cliente $cliente, Proyecto $proyecto)
     {
-        $proyecto->delete();
-        return response()->json(['message' => 'Proyecto eliminado']);
+        try {
+            if ($proyecto->id_cliente !== $cliente->id) {
+                return response()->json(['message' => 'El proyecto no pertenece a este cliente'], 403);
+            }
+
+            $proyecto->delete();
+            return response()->json(['message' => 'Proyecto eliminado correctamente']);
+        } catch (\Exception $e) {
+            \Log::error('Error al eliminar proyecto: ' . $e->getMessage());
+            return response()->json(['message' => 'Error al eliminar el proyecto'], 500);
+        }
     }
 
     public function create(Cliente $cliente)

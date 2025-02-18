@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Proyectos de {{ $cliente->nombre }} {{ $cliente->apellido }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -91,13 +92,22 @@
                         </div>
                     </div>
                 </div>
-                <button onclick="window.location.href='{{ route('clientes.index') }}'" 
-                        class="h-[42px] bg-gray-500 hover:bg-gray-700 text-white font-bold px-6 rounded-lg flex items-center justify-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                    </svg>
-                    Volver
-                </button>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('clientes.proyectos.create', $cliente) }}" 
+                       class="h-[42px] bg-blue-500 hover:bg-blue-700 text-white font-bold px-6 rounded-lg flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        Nuevo Proyecto
+                    </a>
+                    <button onclick="window.location.href='{{ route('clientes.index') }}'" 
+                            class="h-[42px] bg-gray-500 hover:bg-gray-700 text-white font-bold px-6 rounded-lg flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                        Volver
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -304,21 +314,27 @@
 
         function eliminarProyecto(proyectoId) {
             if (confirm('¿Estás seguro de que deseas eliminar este proyecto?')) {
-                fetch(`/api/clientes/{{ $cliente->id }}/proyectos/${proyectoId}`, {
+                fetch(`/clientes/{{ $cliente->id }}/proyectos/${proyectoId}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al eliminar el proyecto');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     alert('Proyecto eliminado correctamente');
-                    window.location.reload();
+                    document.querySelector(`tr[data-proyecto-id="${proyectoId}"]`).remove();
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error al eliminar el proyecto');
+                    alert(error.message);
                 });
             }
         }
