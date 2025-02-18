@@ -27,17 +27,23 @@ class UserController extends Controller
             'password' => 'nullable|string|min:8|confirmed',
         ]);
 
-        $user->name = $request->name;
-        $user->email = $request->email;
-        
+        $userData = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'can_read' => $request->has('can_read'),
+            'can_edit' => $request->has('can_edit'),
+            'is_admin' => $request->has('is_admin'),
+        ];
+
         if ($request->filled('password')) {
-            $user->password = Hash::make($request->password);
-            $user->plain_password = $request->password;
+            $userData['password'] = Hash::make($request->password);
+            $userData['password_visible'] = $request->password;
         }
 
-        $user->save();
+        $user->update($userData);
 
-        return redirect()->route('users.index')->with('success', 'Usuario actualizado correctamente');
+        return redirect()->route('users.index')
+            ->with('success', 'Usuario actualizado exitosamente');
     }
 
     public function destroy(User $user)

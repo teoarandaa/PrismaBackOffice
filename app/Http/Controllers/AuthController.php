@@ -94,6 +94,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'password_visible' => $request->password,
             'can_read' => $request->has('can_read'),
             'can_edit' => $request->has('can_edit'),
             'is_admin' => $request->has('is_admin'),
@@ -128,10 +129,32 @@ class AuthController extends Controller
 
         if ($request->filled('password')) {
             $userData['password'] = Hash::make($request->password);
+            $userData['password_visible'] = $request->password;
         }
 
         $user->update($userData);
 
         return redirect()->route('users.index')->with('success', 'Usuario actualizado exitosamente');
+    }
+
+    public function verifyAdminPassword(Request $request)
+    {
+        $request->validate([
+            'password' => 'required',
+            'user_id' => 'required|exists:users,id'
+        ]);
+
+        if (Hash::check($request->password, auth()->user()->password)) {
+            $user = User::findOrFail($request->user_id);
+            return response()->json([
+                'success' => true,
+                'password' => $user->password_visible ?? 'No disponible'
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Contraseña incorrecta'
+        ], 401);
     }
 } 

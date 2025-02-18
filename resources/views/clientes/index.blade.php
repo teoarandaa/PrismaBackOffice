@@ -123,30 +123,37 @@
                        class="h-[42px] bg-green-500 hover:bg-green-700 text-white font-bold px-4 rounded-lg flex items-center justify-center min-w-[150px]">
                         Exportar CSV
                     </a>
-                    <button onclick="document.getElementById('importForm').classList.toggle('hidden')"
-                            class="h-[42px] bg-purple-500 hover:bg-purple-700 text-white font-bold px-4 rounded-lg flex items-center justify-center">
-                        Importar CSV
-                    </button>
-                    <button onclick="window.location.href='{{ route('clientes.create') }}'" 
-                            class="h-[42px] bg-blue-500 hover:bg-blue-700 text-white font-bold px-4 rounded-lg flex items-center justify-center">
-                        Nuevo Cliente
-                    </button>
+                    @if(auth()->user()->can_edit || auth()->user()->is_admin)
+                        <button onclick="document.getElementById('importForm').classList.toggle('hidden')"
+                                class="h-[42px] bg-purple-500 hover:bg-purple-700 text-white font-bold px-4 rounded-lg flex items-center justify-center">
+                            Importar CSV
+                        </button>
+                        <a href="{{ route('clientes.create') }}" 
+                           class="h-[42px] bg-blue-500 hover:bg-blue-700 text-white font-bold px-4 rounded-lg flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            Nuevo Cliente
+                        </a>
+                    @endif
                 </div>
             </div>
         </div>
 
-        <div id="importForm" class="hidden mb-6 p-4 bg-white rounded-lg shadow">
-            <form action="{{ route('importar') }}" method="POST" enctype="multipart/form-data" class="flex items-center space-x-4">
-                @csrf
-                <input type="file" name="archivo" accept=".csv,.txt" required
-                       class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
-                              file:rounded-full file:border-0 file:text-sm file:font-semibold
-                              file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Subir Archivo
-                </button>
-            </form>
-        </div>
+        @if(auth()->user()->can_edit || auth()->user()->is_admin)
+            <div id="importForm" class="hidden mb-6 p-4 bg-white rounded-lg shadow">
+                <form action="{{ route('importar') }}" method="POST" enctype="multipart/form-data" class="flex items-center space-x-4">
+                    @csrf
+                    <input type="file" name="archivo" accept=".csv,.txt" required
+                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
+                                  file:rounded-full file:border-0 file:text-sm file:font-semibold
+                                  file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Subir Archivo
+                    </button>
+                </form>
+            </div>
+        @endif
 
         @if($clientes->count() > 0)
             <div id="noResultados" class="hidden col-span-full">
@@ -188,15 +195,17 @@
                                 Ver Proyectos
                             </a>
                             
-                            <a href="{{ route('clientes.edit', $cliente) }}" 
-                               class="bg-yellow-500 hover:bg-yellow-700 text-white text-center py-2 px-4 rounded">
-                                Editar Cliente
-                            </a>
-                            
-                            <button onclick="eliminarCliente({{ $cliente->id }})" 
-                                    class="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded">
-                                Eliminar Cliente
-                            </button>
+                            @if(auth()->user()->can_edit || auth()->user()->is_admin)
+                                <a href="{{ route('clientes.edit', $cliente) }}" 
+                                   class="bg-yellow-500 hover:bg-yellow-700 text-white text-center py-2 px-4 rounded">
+                                    Editar Cliente
+                                </a>
+                                
+                                <button onclick="eliminarCliente({{ $cliente->id }})" 
+                                        class="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded">
+                                    Eliminar Cliente
+                                </button>
+                            @endif
                         </div>
                     </div>
                 </div>

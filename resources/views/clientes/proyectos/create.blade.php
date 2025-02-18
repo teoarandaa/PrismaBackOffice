@@ -56,9 +56,9 @@
                         <label for="estado" class="block text-sm font-medium text-gray-700">Estado</label>
                         <select id="estado" name="estado"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="en_progreso">En Progreso</option>
-                            <option value="completado">Completado</option>
-                            <option value="cancelado">Cancelado</option>
+                            <option value="En progreso">En Progreso</option>
+                            <option value="Completado">Completado</option>
+                            <option value="Cancelado">Cancelado</option>
                         </select>
                     </div>
 
@@ -83,24 +83,23 @@
         document.getElementById('createForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const formData = {
-                nombre: document.getElementById('nombre').value,
-                descripcion: document.getElementById('descripcion').value,
-                fecha_inicio: document.getElementById('fecha_inicio').value,
-                fecha_fin_estimada: document.getElementById('fecha_fin_estimada').value,
-                presupuesto: document.getElementById('presupuesto').value,
-                estado: document.getElementById('estado').value,
-                link: document.getElementById('link').value
-            };
+            const formData = new FormData();
+            formData.append('nombre', document.getElementById('nombre').value);
+            formData.append('descripcion', document.getElementById('descripcion').value);
+            formData.append('fecha_inicio', document.getElementById('fecha_inicio').value);
+            formData.append('fecha_fin_estimada', document.getElementById('fecha_fin_estimada').value);
+            formData.append('presupuesto', document.getElementById('presupuesto').value);
+            formData.append('estado', document.getElementById('estado').value);
+            formData.append('link', document.getElementById('link').value);
+            formData.append('_token', '{{ csrf_token() }}');
 
             fetch('{{ route("clientes.proyectos.store", $cliente) }}', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify(formData)
+                body: formData
             })
             .then(response => {
                 if (!response.ok) {
@@ -114,7 +113,11 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert(error.message || 'Error al crear el proyecto');
+                if (error.message) {
+                    alert(error.message);
+                } else {
+                    alert('Error al crear el proyecto');
+                }
             });
         });
     </script>

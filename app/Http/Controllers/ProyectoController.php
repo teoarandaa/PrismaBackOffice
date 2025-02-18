@@ -21,33 +21,25 @@ class ProyectoController extends Controller
             'descripcion' => 'nullable|string',
             'fecha_inicio' => 'nullable|date',
             'fecha_fin_estimada' => 'nullable|date',
-            'estado' => 'required|in:en_progreso,completado,cancelado',
             'presupuesto' => 'nullable|numeric',
-            'link' => 'nullable|url'
+            'estado' => 'required|in:En progreso,Completado,Cancelado',
+            'link' => 'nullable|url',
         ]);
 
-        try {
-            $proyecto = $cliente->proyectos()->create([
-                'nombre_proyecto' => $request->nombre,
-                'descripcion' => $request->descripcion,
-                'fecha_inicio' => $request->fecha_inicio,
-                'fecha_finalizacion' => $request->fecha_fin_estimada,
-                'presupuesto' => $request->presupuesto,
-                'estado' => $request->estado === 'en_progreso' ? 'En progreso' : ucfirst($request->estado),
-                'link' => $request->link
-            ]);
+        $proyecto = $cliente->proyectos()->create([
+            'nombre_proyecto' => $request->nombre,
+            'descripcion' => $request->descripcion,
+            'fecha_inicio' => $request->fecha_inicio,
+            'fecha_finalizacion' => $request->fecha_fin_estimada,
+            'presupuesto' => $request->presupuesto,
+            'estado' => $request->estado,
+            'link' => $request->link,
+        ]);
 
-            return response()->json([
-                'message' => 'Proyecto creado exitosamente',
-                'data' => $proyecto
-            ], 201);
-        } catch (\Exception $e) {
-            \Log::error('Error al crear proyecto: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Error al crear el proyecto',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+        return response()->json([
+            'message' => 'Proyecto creado exitosamente',
+            'proyecto' => $proyecto
+        ]);
     }
 
     public function show(Cliente $cliente, Proyecto $proyecto)
@@ -108,6 +100,10 @@ class ProyectoController extends Controller
 
     public function create(Cliente $cliente)
     {
+        if (!auth()->user()->can_edit && !auth()->user()->is_admin) {
+            abort(403, 'No tienes permisos para crear proyectos');
+        }
+        
         return view('clientes.proyectos.create', compact('cliente'));
     }
 

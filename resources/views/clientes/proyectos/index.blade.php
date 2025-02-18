@@ -93,13 +93,15 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <a href="{{ route('clientes.proyectos.create', $cliente) }}" 
-                       class="h-[42px] bg-blue-500 hover:bg-blue-700 text-white font-bold px-6 rounded-lg flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                        </svg>
-                        Nuevo Proyecto
-                    </a>
+                    @if(auth()->user()->can_edit || auth()->user()->is_admin)
+                        <a href="{{ route('clientes.proyectos.create', $cliente) }}" 
+                           class="h-[42px] bg-blue-500 hover:bg-blue-700 text-white font-bold px-6 rounded-lg flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            Nuevo Proyecto
+                        </a>
+                    @endif
                     <button onclick="window.location.href='{{ route('clientes.index') }}'" 
                             class="h-[42px] bg-gray-500 hover:bg-gray-700 text-white font-bold px-6 rounded-lg flex items-center justify-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,18 +161,20 @@
                             €{{ number_format($proyecto->presupuesto, 2, ',', '.') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                            <button onclick="window.location.href='{{ route('clientes.proyectos.show', [$cliente, $proyecto]) }}'"
+                            <a href="{{ route('clientes.proyectos.show', [$cliente, $proyecto]) }}"
                                     class="text-blue-600 hover:text-blue-900">
-                                Detalles
-                            </button>
-                            <button onclick="window.location.href='{{ route('clientes.proyectos.edit', [$cliente, $proyecto]) }}'"
-                                    class="text-yellow-600 hover:text-yellow-900">
-                                Editar
-                            </button>
-                            <button onclick="eliminarProyecto({{ $proyecto->id }})"
-                                    class="text-red-600 hover:text-red-900">
-                                Eliminar
-                            </button>
+                                Ver
+                            </a>
+                            @if(auth()->user()->can_edit || auth()->user()->is_admin)
+                                <a href="{{ route('clientes.proyectos.edit', [$cliente, $proyecto]) }}"
+                                        class="text-yellow-600 hover:text-yellow-900">
+                                    Editar
+                                </a>
+                                <button onclick="eliminarProyecto({{ $proyecto->id }})"
+                                        class="text-red-600 hover:text-red-900">
+                                    Eliminar
+                                </button>
+                            @endif
                         </td>
                     </tr>
                     @endforeach

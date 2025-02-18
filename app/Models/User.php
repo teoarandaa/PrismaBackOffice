@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'password_visible',
         'can_read',
         'can_edit',
         'is_admin'

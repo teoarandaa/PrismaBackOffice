@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cliente;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class ClienteController extends Controller
 {
@@ -75,23 +76,34 @@ class ClienteController extends Controller
         }
     }
 
-    public function destroy(Cliente $cliente)
+    public function destroy(Request $request, Cliente $cliente)
     {
         try {
-            // Verificar si tiene proyectos relacionados
-            if ($cliente->proyectos()->count() > 0) {
+            // Verificar que el usuario tiene permisos de edición o es admin
+            if (!auth()->user()->can_edit && !auth()->user()->is_admin) {
                 return response()->json([
-                    'message' => 'No se puede eliminar el cliente porque tiene proyectos asociados'
-                ], 422);
+                    'message' => 'No tienes permisos para eliminar clientes'
+                ], 403);
             }
 
+            // Eliminar los proyectos asociados y luego el cliente
+            $cliente->proyectos()->delete();
             $cliente->delete();
             
+            \Log::info('Cliente eliminado exitosamente', [
+                'cliente_id' => $cliente->id,
+                'user_id' => auth()->id()
+            ]);
+
             return response()->json([
-                'message' => 'Cliente eliminado correctamente'
+                'message' => 'Cliente y sus proyectos eliminados correctamente'
             ], 200);
         } catch (\Exception $e) {
-            \Log::error('Error eliminando cliente: ' . $e->getMessage());
+            \Log::error('Error eliminando cliente: ' . $e->getMessage(), [
+                'cliente_id' => $cliente->id,
+                'error' => $e->getMessage()
+            ]);
+            
             return response()->json([
                 'message' => 'Error al eliminar el cliente: ' . $e->getMessage()
             ], 500);

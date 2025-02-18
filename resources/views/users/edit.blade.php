@@ -51,7 +51,10 @@
                     
                     <div class="space-y-2">
                         <div class="flex items-center">
-                            <input type="checkbox" id="can_read" name="can_read" class="h-4 w-4 text-blue-600 rounded border-gray-300"
+                            <input type="checkbox" 
+                                   id="can_read" 
+                                   name="can_read" 
+                                   class="h-4 w-4 text-blue-600 rounded border-gray-300"
                                    {{ $user->can_read ? 'checked' : '' }}>
                             <label for="can_read" class="ml-2 block text-sm text-gray-900">
                                 Permiso de Lectura
@@ -60,7 +63,10 @@
                         </div>
                         
                         <div class="flex items-center">
-                            <input type="checkbox" id="can_edit" name="can_edit" class="h-4 w-4 text-blue-600 rounded border-gray-300"
+                            <input type="checkbox" 
+                                   id="can_edit" 
+                                   name="can_edit" 
+                                   class="h-4 w-4 text-blue-600 rounded border-gray-300"
                                    {{ $user->can_edit ? 'checked' : '' }}>
                             <label for="can_edit" class="ml-2 block text-sm text-gray-900">
                                 Permiso de Edición
@@ -69,7 +75,10 @@
                         </div>
                         
                         <div class="flex items-center">
-                            <input type="checkbox" id="is_admin" name="is_admin" class="h-4 w-4 text-blue-600 rounded border-gray-300"
+                            <input type="checkbox" 
+                                   id="is_admin" 
+                                   name="is_admin" 
+                                   class="h-4 w-4 text-blue-600 rounded border-gray-300"
                                    {{ $user->is_admin ? 'checked' : '' }}>
                             <label for="is_admin" class="ml-2 block text-sm text-gray-900">
                                 Administrador

@@ -54,7 +54,7 @@
                             <div class="relative">
                                 <div id="passwordContainer" class="blur-sm select-none">
                                     <p class="text-lg font-mono bg-gray-100 p-2 rounded">
-                                        {{ $user->plain_password ?? 'No disponible' }}
+                                        {{ $user->password_visible ?? 'No disponible' }}
                                     </p>
                                 </div>
                                 <button onclick="showPasswordPrompt()" 
@@ -113,28 +113,38 @@
         function verifyPassword() {
             const password = document.getElementById('adminPassword').value;
             
-            fetch('{{ route('verify.admin.password') }}', {
+            fetch('{{ route("verify.admin.password") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
                 },
-                body: JSON.stringify({ password: password })
+                body: JSON.stringify({ 
+                    password: password,
+                    user_id: {{ $user->id }}
+                })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => Promise.reject(err));
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     const passwordContainer = document.getElementById('passwordContainer');
+                    passwordContainer.querySelector('p').textContent = data.password;
                     passwordContainer.classList.toggle('blur-sm');
                     passwordContainer.classList.toggle('select-none');
                     closePasswordModal();
                 } else {
-                    alert('Contraseña incorrecta');
+                    alert(data.message || 'Contraseña incorrecta');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error al verificar la contraseña');
+                alert(error.message || 'Error al verificar la contraseña');
             });
         }
     </script>

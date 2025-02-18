@@ -106,14 +106,12 @@
                                 class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                             Ver Todos los Proyectos
                         </button>
-                        <button onclick="window.location.href='{{ route('clientes.edit', $cliente) }}'"
-                                class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
-                            Editar Cliente
-                        </button>
-                        <button onclick="eliminarCliente()"
-                                class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                            Eliminar Cliente
-                        </button>
+                        @if(auth()->user()->can_edit || auth()->user()->is_admin)
+                            <button onclick="eliminarCliente()"
+                                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                                Eliminar Cliente
+                            </button>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -122,33 +120,25 @@
 
     <script>
         function eliminarCliente() {
-            if (confirm('¿Estás seguro de que deseas eliminar este cliente? Se eliminarán también todos sus proyectos.')) {
-                fetch('{{ route("clientes.destroy", $cliente) }}', {
+            if (confirm('¿Está seguro de que desea eliminar este cliente y todos sus proyectos asociados?')) {
+                fetch(`/clientes/{{ $cliente->id }}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Accept': 'application/json'
-                    },
-                    credentials: 'same-origin'
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(err => Promise.reject(err));
                     }
-                    return response.json();
                 })
+                .then(response => response.json())
                 .then(data => {
                     alert(data.message);
-                    window.location.href = '{{ route('clientes.index') }}';
+                    if (data.message === 'Cliente y sus proyectos eliminados correctamente') {
+                        window.location.href = '{{ route('clientes.index') }}';
+                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    if (error.message) {
-                        alert(error.message);
-                    } else {
-                        alert('Error al eliminar el cliente');
-                    }
+                    alert('Error al eliminar el cliente');
                 });
             }
         }
