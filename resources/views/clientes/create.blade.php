@@ -93,22 +93,28 @@
                 pais: document.getElementById('pais').value
             };
 
-            fetch('/api/clientes', {
+            fetch('{{ route("clientes.store") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify(formData)
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => Promise.reject(err));
+                }
+                return response.json();
+            })
             .then(data => {
                 alert('Cliente creado correctamente');
                 window.location.href = '{{ route('clientes.index') }}';
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error al crear el cliente');
+                alert(error.message || 'Error al crear el cliente');
             });
         });
     </script>
