@@ -64,32 +64,34 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             @foreach($users as $user)
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <h2 class="text-xl font-semibold">{{ $user->name }}</h2>
-                        <p class="text-gray-600">{{ $user->email }}</p>
-                        <p class="text-sm text-gray-500">Registrado: {{ $user->created_at->format('d/m/Y') }}</p>
-                    </div>
-                </div>
+                @if($user->id !== 1)
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h2 class="text-xl font-semibold">{{ $user->name }}</h2>
+                                <p class="text-gray-600">{{ $user->email }}</p>
+                                <p class="text-sm text-gray-500">Registrado: {{ $user->created_at->format('d/m/Y') }}</p>
+                            </div>
+                        </div>
 
-                <div class="border-t pt-4">
-                    <div class="flex flex-col space-y-2">
-                        <a href="{{ route('users.show', $user) }}" 
-                           class="bg-blue-500 hover:bg-blue-700 text-white text-center py-2 px-4 rounded">
-                            Ver Detalles
-                        </a>
-                        <a href="{{ route('users.edit', $user) }}" 
-                           class="bg-yellow-500 hover:bg-yellow-700 text-white text-center py-2 px-4 rounded">
-                            Editar Usuario
-                        </a>
-                        <button onclick="eliminarUsuario({{ $user->id }})" 
-                                class="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded">
-                            Eliminar Usuario
-                        </button>
+                        <div class="border-t pt-4">
+                            <div class="flex flex-col space-y-2">
+                                <a href="{{ route('users.show', $user) }}" 
+                                   class="bg-blue-500 hover:bg-blue-700 text-white text-center py-2 px-4 rounded">
+                                    Ver Detalles
+                                </a>
+                                <a href="{{ route('users.edit', $user) }}" 
+                                   class="bg-yellow-500 hover:bg-yellow-700 text-white text-center py-2 px-4 rounded">
+                                    Editar Usuario
+                                </a>
+                                <button onclick="eliminarUsuario({{ $user->id }})" 
+                                        class="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded">
+                                    Eliminar Usuario
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
+                @endif
             @endforeach
         </div>
     </div>

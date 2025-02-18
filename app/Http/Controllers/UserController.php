@@ -10,7 +10,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::where('id', '!=', auth()->id())->get();
+        $users = User::where('id', '>', 1)->get();
         return view('users.index', compact('users'));
     }
 
@@ -48,12 +48,22 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        if ($user->is_admin) {
-            return response()->json(['message' => 'No se puede eliminar un usuario administrador'], 403);
+        if ($user->id === 1) {
+            return response()->json([
+                'message' => 'El usuario administrador no puede ser eliminado'
+            ], 403);
         }
 
-        $user->delete();
-        return response()->json(['message' => 'Usuario eliminado correctamente']);
+        try {
+            $user->delete();
+            return response()->json([
+                'message' => 'Usuario eliminado correctamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al eliminar el usuario'
+            ], 500);
+        }
     }
 
     public function show(User $user)

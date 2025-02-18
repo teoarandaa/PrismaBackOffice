@@ -15,6 +15,8 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('plain_password')->nullable(); // Para almacenar la contraseña sin encriptar
+            $table->boolean('can_read')->default(true);
+            $table->boolean('can_edit')->default(false);
             $table->boolean('is_admin')->default(false);
             $table->rememberToken();
             $table->timestamps();

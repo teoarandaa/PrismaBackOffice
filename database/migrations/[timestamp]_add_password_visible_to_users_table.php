@@ -10,9 +10,6 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->string('password_visible')->nullable();
-            $table->boolean('can_read')->default(true);
-            $table->boolean('can_edit')->default(false);
-            $table->boolean('is_admin')->default(false);
         });
     }
 
@@ -20,9 +17,6 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('password_visible');
-            $table->dropColumn('can_read');
-            $table->dropColumn('can_edit');
-            $table->dropColumn('is_admin');
         });
     }
 }; 
