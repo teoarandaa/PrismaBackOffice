@@ -19,13 +19,22 @@
                 </div>
                 <div class="flex items-center gap-4">
                     @if(auth()->user()->is_admin)
-                        <button onclick="window.location.href='{{ route('register') }}'" 
-                                class="h-[42px] bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 rounded-lg flex items-center justify-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-                            </svg>
-                            Registrar Usuario BackOffice
-                        </button>
+                        <div class="flex items-center gap-4">
+                            <button onclick="window.location.href='{{ route('users.index') }}'" 
+                                    class="h-[42px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 rounded-lg flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                </svg>
+                                Gestionar Usuarios
+                            </button>
+                            <button onclick="window.location.href='{{ route('register') }}'" 
+                                    class="h-[42px] bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 rounded-lg flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                                </svg>
+                                Registrar Usuario BackOffice
+                            </button>
+                        </div>
                     @endif
                     <div class="flex items-center gap-4 border-l pl-4">
                         <div class="text-right">

@@ -5,6 +5,7 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\DataController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
 
 // Rutas de autenticación
 Route::middleware('guest')->group(function () {
@@ -43,5 +44,11 @@ Route::middleware('auth')->group(function () {
         })->name('register');
         
         Route::post('/register', [AuthController::class, 'webRegister'])->name('register.post');
+        Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+        Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
+        Route::post('/verify-admin-password', [UserController::class, 'verifyAdminPassword'])->name('verify.admin.password');
     });
 });
