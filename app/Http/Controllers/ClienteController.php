@@ -42,8 +42,31 @@ class ClienteController extends Controller
 
     public function update(Request $request, Cliente $cliente)
     {
-        $cliente->update($request->all());
-        return $cliente;
+        try {
+            $validated = $request->validate([
+                'nombre' => 'required|string|max:255',
+                'apellido' => 'required|string|max:255',
+                'email' => 'required|email|unique:clientes,email,' . $cliente->id,
+                'telefono' => 'nullable|string|max:255',
+                'ciudad' => 'nullable|string|max:255',
+                'codigo_postal' => 'nullable|string|max:255',
+                'pais' => 'nullable|string|max:255',
+                'empresa' => 'nullable|string|max:255'
+            ]);
+
+            $cliente->update($validated);
+            
+            return response()->json([
+                'message' => 'Cliente actualizado correctamente',
+                'cliente' => $cliente
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('Error actualizando cliente: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error al actualizar el cliente',
+                'error' => $e->getMessage()
+            ], 422);
+        }
     }
 
     public function destroy(Cliente $cliente)
