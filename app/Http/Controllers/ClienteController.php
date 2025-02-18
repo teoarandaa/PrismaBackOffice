@@ -36,8 +36,14 @@ class ClienteController extends Controller
 
     public function show(Cliente $cliente)
     {
-        $cliente->load('proyectos');
-        return view('clientes.show', compact('cliente'));
+        try {
+            $cliente->load('proyectos');
+            return view('clientes.show', compact('cliente'));
+        } catch (\Exception $e) {
+            \Log::error('Error mostrando cliente: ' . $e->getMessage());
+            return redirect()->route('clientes.index')
+                ->with('error', 'Error al mostrar los detalles del cliente');
+        }
     }
 
     public function update(Request $request, Cliente $cliente)
@@ -71,8 +77,25 @@ class ClienteController extends Controller
 
     public function destroy(Cliente $cliente)
     {
-        $cliente->delete();
-        return response()->json(['message' => 'Cliente eliminado']);
+        try {
+            // Verificar si tiene proyectos relacionados
+            if ($cliente->proyectos()->count() > 0) {
+                return response()->json([
+                    'message' => 'No se puede eliminar el cliente porque tiene proyectos asociados'
+                ], 422);
+            }
+
+            $cliente->delete();
+            
+            return response()->json([
+                'message' => 'Cliente eliminado correctamente'
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('Error eliminando cliente: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error al eliminar el cliente: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function create()

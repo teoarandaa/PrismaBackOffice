@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Detalles del Cliente</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -122,21 +123,32 @@
     <script>
         function eliminarCliente() {
             if (confirm('¿Estás seguro de que deseas eliminar este cliente? Se eliminarán también todos sus proyectos.')) {
-                fetch('/api/clientes/{{ $cliente->id }}', {
+                fetch('{{ route("clientes.destroy", $cliente) }}', {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    }
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => Promise.reject(err));
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    alert('Cliente eliminado correctamente');
+                    alert(data.message);
                     window.location.href = '{{ route('clientes.index') }}';
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error al eliminar el cliente');
+                    if (error.message) {
+                        alert(error.message);
+                    } else {
+                        alert('Error al eliminar el cliente');
+                    }
                 });
             }
         }

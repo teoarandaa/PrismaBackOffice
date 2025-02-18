@@ -25,8 +25,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/clientes', [ClienteController::class, 'index'])->name('clientes.index');
     Route::get('/clientes/create', [ClienteController::class, 'create'])->name('clientes.create');
     Route::post('/clientes', [ClienteController::class, 'store'])->name('clientes.store');
+    Route::get('/clientes/{cliente}', [ClienteController::class, 'show'])->name('clientes.show');
     Route::get('/clientes/{cliente}/edit', [ClienteController::class, 'edit'])->name('clientes.edit');
     Route::put('/clientes/{cliente}', [ClienteController::class, 'update'])->name('clientes.update');
+    Route::delete('/clientes/{cliente}', [ClienteController::class, 'destroy'])->name('clientes.destroy');
     Route::get('/clientes/{cliente}/proyectos', [ProyectoController::class, 'index'])->name('clientes.proyectos.index');
     Route::get('/clientes/{cliente}/proyectos/create', [ProyectoController::class, 'create'])->name('clientes.proyectos.create');
     Route::get('/clientes/{cliente}/proyectos/{proyecto}', [ProyectoController::class, 'show'])->name('clientes.proyectos.show');

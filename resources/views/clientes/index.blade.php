@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Gestión de Clientes</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -147,59 +148,78 @@
             </form>
         </div>
 
-        <div id="noResultados" class="hidden col-span-full">
-            <div class="flex flex-col items-center justify-center py-12">
-                <div class="bg-gray-100 rounded-full p-4 mb-4">
-                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
-                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        @if($clientes->count() > 0)
+            <div id="noResultados" class="hidden col-span-full">
+                <div class="flex flex-col items-center justify-center py-12">
+                    <div class="bg-gray-100 rounded-full p-4 mb-4">
+                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-1">No se encontraron resultados</h3>
+                    <p class="text-gray-500">Prueba con otros términos de búsqueda o filtros</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                @foreach($clientes as $cliente)
+                <div class="bg-white rounded-lg shadow-md p-6" 
+                     data-cliente-id="{{ $cliente->id }}"
+                     data-num-proyectos="{{ $cliente->proyectos->count() }}"
+                     data-estados="{{ json_encode($cliente->proyectos->pluck('estado')->unique()->values()) }}"
+                     data-fecha="{{ $cliente->created_at }}">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h2 class="text-xl font-semibold">{{ $cliente->nombre }} {{ $cliente->apellido }}</h2>
+                            <p class="text-gray-600">{{ $cliente->email }}</p>
+                            <p class="text-gray-500">{{ $cliente->empresa ?: 'Sin empresa' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="border-t pt-4">
+                        <div class="flex flex-col space-y-2">
+                            <a href="{{ route('clientes.show', $cliente) }}" 
+                               class="bg-blue-500 hover:bg-blue-700 text-white text-center py-2 px-4 rounded">
+                                Ver Detalles
+                            </a>
+                            <a href="{{ route('clientes.proyectos.index', $cliente) }}" 
+                               class="bg-green-500 hover:bg-green-700 text-white text-center py-2 px-4 rounded">
+                                Ver Proyectos
+                            </a>
+                            
+                            <a href="{{ route('clientes.edit', $cliente) }}" 
+                               class="bg-yellow-500 hover:bg-yellow-700 text-white text-center py-2 px-4 rounded">
+                                Editar Cliente
+                            </a>
+                            
+                            <button onclick="eliminarCliente({{ $cliente->id }})" 
+                                    class="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded">
+                                Eliminar Cliente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        @else
+            <div class="bg-white rounded-lg shadow-md p-6 text-center">
+                <div class="flex flex-col items-center justify-center space-y-4">
+                    <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                     </svg>
-                </div>
-                <h3 class="text-lg font-medium text-gray-900 mb-1">No se encontraron resultados</h3>
-                <p class="text-gray-500">Prueba con otros términos de búsqueda o filtros</p>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            @foreach($clientes as $cliente)
-            <div class="bg-white rounded-lg shadow-md p-6" 
-                 data-cliente-id="{{ $cliente->id }}"
-                 data-num-proyectos="{{ $cliente->proyectos->count() }}"
-                 data-estados="{{ json_encode($cliente->proyectos->pluck('estado')->unique()->values()) }}"
-                 data-fecha="{{ $cliente->created_at }}">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <h2 class="text-xl font-semibold">{{ $cliente->nombre }} {{ $cliente->apellido }}</h2>
-                        <p class="text-gray-600">{{ $cliente->email }}</p>
-                        <p class="text-gray-500">{{ $cliente->empresa ?: 'Sin empresa' }}</p>
-                    </div>
-                </div>
-
-                <div class="border-t pt-4">
-                    <div class="flex flex-col space-y-2">
-                        <a href="{{ route('clientes.show', $cliente) }}" 
-                           class="bg-blue-500 hover:bg-blue-700 text-white text-center py-2 px-4 rounded">
-                            Ver Detalles
-                        </a>
-                        <a href="{{ route('clientes.proyectos.index', $cliente) }}" 
-                           class="bg-green-500 hover:bg-green-700 text-white text-center py-2 px-4 rounded">
-                            Ver Proyectos
-                        </a>
-                        
-                        <a href="{{ route('clientes.edit', $cliente) }}" 
-                           class="bg-yellow-500 hover:bg-yellow-700 text-white text-center py-2 px-4 rounded">
-                            Editar Cliente
-                        </a>
-                        
-                        <button onclick="eliminarCliente({{ $cliente->id }})" 
-                                class="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded">
-                            Eliminar Cliente
-                        </button>
-                    </div>
+                    <h3 class="text-xl font-medium text-gray-900">No hay clientes registrados</h3>
+                    <p class="text-gray-500">Comienza agregando tu primer cliente haciendo clic en el botón "Nuevo Cliente".</p>
+                    <a href="{{ route('clientes.create') }}" 
+                       class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg inline-flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Agregar Cliente
+                    </a>
                 </div>
             </div>
-            @endforeach
-        </div>
+        @endif
     </div>
 
     <script>
@@ -301,22 +321,33 @@
         document.getElementById('filtroOrden').addEventListener('change', aplicarFiltros);
 
         function eliminarCliente(clienteId) {
-            if (confirm('¿Estás seguro de que deseas eliminar este cliente? Se eliminarán también todos sus proyectos.')) {
-                fetch(`/api/clientes/${clienteId}`, {
+            if (confirm('¿Está seguro de que desea eliminar este cliente?')) {
+                fetch(`/clientes/${clienteId}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    }
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => Promise.reject(err));
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    alert('Cliente eliminado correctamente');
+                    alert(data.message);
                     window.location.reload();
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error al eliminar el cliente');
+                    if (error.message) {
+                        alert(error.message);
+                    } else {
+                        alert('Error al eliminar el cliente');
+                    }
                 });
             }
         }
