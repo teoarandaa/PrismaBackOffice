@@ -92,6 +92,18 @@
         </div>
 
         <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <div id="noResultados" class="hidden">
+                <div class="flex flex-col items-center justify-center py-12">
+                    <div class="bg-gray-100 rounded-full p-4 mb-4">
+                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-1">No se encontraron resultados</h3>
+                    <p class="text-gray-500">Prueba con otros términos de búsqueda o filtros</p>
+                </div>
+            </div>
             <table class="min-w-full">
                 <thead class="bg-gray-50">
                     <tr>
@@ -169,6 +181,7 @@
             const presupuestoMin = parseFloat(document.getElementById('presupuestoMin').value) || 0;
             const presupuestoMax = parseFloat(document.getElementById('presupuestoMax').value);
             const filtroOrden = document.getElementById('filtroOrden').value;
+            let resultadosEncontrados = false;
             
             rows.forEach(row => {
                 const nombreProyecto = row.querySelector('td:first-child .text-gray-900').textContent.toLowerCase();
@@ -210,7 +223,14 @@
                 }
 
                 row.style.display = mostrar ? '' : 'none';
+                if (mostrar) resultadosEncontrados = true;
             });
+            
+            // Mostrar/ocultar mensaje de no resultados
+            const noResultados = document.getElementById('noResultados');
+            const tabla = document.querySelector('table');
+            noResultados.style.display = resultadosEncontrados ? 'none' : 'block';
+            tabla.style.display = resultadosEncontrados ? '' : 'none';
             
             // Ordenar las filas
             const tbody = document.querySelector('tbody');

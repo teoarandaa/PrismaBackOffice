@@ -107,6 +107,19 @@
             </form>
         </div>
 
+        <div id="noResultados" class="hidden col-span-full">
+            <div class="flex flex-col items-center justify-center py-12">
+                <div class="bg-gray-100 rounded-full p-4 mb-4">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-1">No se encontraron resultados</h3>
+                <p class="text-gray-500">Prueba con otros términos de búsqueda o filtros</p>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             @foreach($clientes as $cliente)
             <div class="bg-white rounded-lg shadow-md p-6" 
@@ -166,11 +179,12 @@
 
         // Función para aplicar todos los filtros
         function aplicarFiltros() {
-            const cards = document.querySelectorAll('.grid > div');
+            const cards = document.querySelectorAll('.grid > div:not(#noResultados)');
             const searchTerm = document.getElementById('buscadorClientes').value.toLowerCase();
             const filtroProyectos = document.getElementById('filtroProyectos').value;
             const filtroEstado = document.getElementById('filtroEstado').value;
             const filtroOrden = document.getElementById('filtroOrden').value;
+            let resultadosEncontrados = false;
             
             cards.forEach(card => {
                 const nombre = card.querySelector('h2').textContent.toLowerCase();
@@ -211,7 +225,12 @@
                 }
                 
                 card.style.display = mostrar ? '' : 'none';
+                if (mostrar) resultadosEncontrados = true;
             });
+            
+            // Mostrar/ocultar mensaje de no resultados
+            const noResultados = document.getElementById('noResultados');
+            noResultados.style.display = resultadosEncontrados ? 'none' : 'block';
             
             // Ordenar las tarjetas
             const grid = document.querySelector('.grid');
