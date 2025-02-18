@@ -16,6 +16,7 @@ return new class extends Migration
             $table->date('fecha_inicio')->nullable();
             $table->date('fecha_finalizacion')->nullable();
             $table->enum('estado', ['En progreso', 'Completado', 'Cancelado'])->default('En progreso');
+            $table->enum('tipo', ['web', 'app'])->default('web');
             $table->decimal('presupuesto', 10, 2)->nullable();
             $table->text('link')->nullable();
             $table->timestamps();

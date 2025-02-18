@@ -107,6 +107,10 @@
                             Ver Todos los Proyectos
                         </button>
                         @if(auth()->user()->can_edit || auth()->user()->is_admin)
+                            <button onclick="window.location.href='{{ route('clientes.edit', $cliente) }}'"
+                                    class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
+                                Editar Cliente
+                            </button>
                             <button onclick="eliminarCliente()"
                                     class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
                                 Eliminar Cliente

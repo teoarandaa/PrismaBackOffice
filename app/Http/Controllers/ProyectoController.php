@@ -24,6 +24,7 @@ class ProyectoController extends Controller
             'presupuesto' => 'nullable|numeric',
             'estado' => 'required|in:En progreso,Completado,Cancelado',
             'link' => 'nullable|url',
+            'tipo' => 'required|in:web,app',
         ]);
 
         $proyecto = $cliente->proyectos()->create([
@@ -34,6 +35,7 @@ class ProyectoController extends Controller
             'presupuesto' => $request->presupuesto,
             'estado' => $request->estado,
             'link' => $request->link,
+            'tipo' => $request->tipo,
         ]);
 
         return response()->json([
@@ -56,7 +58,8 @@ class ProyectoController extends Controller
             'fecha_fin_estimada' => 'nullable|date',
             'estado' => 'required|in:en_progreso,completado,cancelado',
             'presupuesto' => 'nullable|numeric',
-            'link' => 'nullable|url'
+            'link' => 'nullable|url',
+            'tipo' => 'required|in:web,app',
         ]);
 
         try {
@@ -67,7 +70,8 @@ class ProyectoController extends Controller
                 'fecha_finalizacion' => $request->fecha_fin_estimada,
                 'presupuesto' => $request->presupuesto,
                 'estado' => $request->estado === 'en_progreso' ? 'En progreso' : ucfirst($request->estado),
-                'link' => $request->link
+                'link' => $request->link,
+                'tipo' => $request->tipo,
             ]);
 
             return response()->json([
@@ -116,5 +120,16 @@ class ProyectoController extends Controller
     {
         $proyectos = Proyecto::with('cliente')->get();
         return view('proyectos.todos', compact('proyectos'));
+    }
+
+    protected function validateProyecto(Request $request)
+    {
+        return $request->validate([
+            'nombre' => 'required|string|max:255',
+            'descripcion' => 'required|string',
+            'estado' => 'required|in:En progreso,Completado,Cancelado',
+            'tipo' => 'required|in:web,app',
+            // ... otros campos existentes
+        ]);
     }
 } 

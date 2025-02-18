@@ -59,6 +59,15 @@
                                 </select>
                             </div>
                             <div class="p-4">
+                                <h3 class="text-sm font-medium text-gray-900 mb-3">Tipo de proyecto</h3>
+                                <select id="filtroTipo" 
+                                        class="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="todos">Todos los tipos</option>
+                                    <option value="web">Sitios Web</option>
+                                    <option value="app">Aplicaciones</option>
+                                </select>
+                            </div>
+                            <div class="p-4">
                                 <h3 class="text-sm font-medium text-gray-900 mb-3">Rango de presupuesto</h3>
                                 <div class="flex gap-2 items-center">
                                     <input type="number" id="presupuestoMin" placeholder="Mínimo" 
@@ -140,7 +149,7 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @foreach($proyectos as $proyecto)
                     <tr data-proyecto-id="{{ $proyecto->id }}">
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4 whitespace-nowrap" data-tipo="{{ $proyecto->tipo }}">
                             <div class="text-sm font-medium text-gray-900">{{ $proyecto->nombre_proyecto }}</div>
                             <div class="text-sm text-gray-500">{{ Str::limit($proyecto->descripcion, 50) }}</div>
                         </td>
@@ -202,6 +211,7 @@
             const searchTerm = document.getElementById('buscadorProyectos').value.toLowerCase();
             const rows = document.querySelectorAll('tbody tr');
             const filtroEstado = document.getElementById('filtroEstado').value;
+            const filtroTipo = document.getElementById('filtroTipo').value;
             const presupuestoMin = parseFloat(document.getElementById('presupuestoMin').value) || 0;
             const presupuestoMax = parseFloat(document.getElementById('presupuestoMax').value);
             const filtroOrden = document.getElementById('filtroOrden').value;
@@ -215,6 +225,7 @@
                 const fechaInicioDate = fechaTexto !== 'No definida' ? 
                     new Date(fechaTexto.split('/').reverse().join('-')) : null;
                 const presupuesto = parseFloat(row.querySelector('td:nth-child(5)').textContent.replace('€', '').replace('.', '').replace(',', '.'));
+                const tipo = row.querySelector('td').getAttribute('data-tipo');
                 
                 let mostrar = true;
 
@@ -244,6 +255,11 @@
                         const fechaMaxima = new Date(fechaFinFiltro);
                         mostrar = fechaInicioDate <= fechaMaxima;
                     }
+                }
+
+                // Filtro de tipo
+                if (mostrar && filtroTipo !== 'todos') {
+                    mostrar = tipo === filtroTipo;
                 }
 
                 row.style.display = mostrar ? '' : 'none';
@@ -296,6 +312,7 @@
         // Eventos para los filtros
         document.getElementById('buscadorProyectos').addEventListener('input', aplicarFiltros);
         document.getElementById('filtroEstado').addEventListener('change', aplicarFiltros);
+        document.getElementById('filtroTipo').addEventListener('change', aplicarFiltros);
         document.getElementById('presupuestoMin').addEventListener('input', aplicarFiltros);
         document.getElementById('presupuestoMax').addEventListener('input', aplicarFiltros);
         document.getElementById('fechaInicio').addEventListener('change', aplicarFiltros);
@@ -305,6 +322,7 @@
         function resetFiltros() {
             document.getElementById('buscadorProyectos').value = '';
             document.getElementById('filtroEstado').value = 'todos';
+            document.getElementById('filtroTipo').value = 'todos';
             document.getElementById('presupuestoMin').value = '';
             document.getElementById('presupuestoMax').value = '';
             document.getElementById('fechaInicio').value = '';
