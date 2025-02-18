@@ -51,29 +51,14 @@
                     <h3 class="text-lg font-medium text-gray-900">Permisos del Usuario</h3>
                     
                     <div class="space-y-2">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="can_read" name="can_read" class="h-4 w-4 text-blue-600 rounded border-gray-300" checked>
-                            <label for="can_read" class="ml-2 block text-sm text-gray-900">
-                                Permiso de Lectura
-                                <span class="text-xs text-gray-500">(Ver clientes y proyectos)</span>
-                            </label>
-                        </div>
-                        
-                        <div class="flex items-center">
-                            <input type="checkbox" id="can_edit" name="can_edit" class="h-4 w-4 text-blue-600 rounded border-gray-300">
-                            <label for="can_edit" class="ml-2 block text-sm text-gray-900">
-                                Permiso de Edición
-                                <span class="text-xs text-gray-500">(Crear, editar y eliminar clientes y proyectos)</span>
-                            </label>
-                        </div>
-                        
-                        <div class="flex items-center">
-                            <input type="checkbox" id="is_admin" name="is_admin" class="h-4 w-4 text-blue-600 rounded border-gray-300">
-                            <label for="is_admin" class="ml-2 block text-sm text-gray-900">
-                                Administrador
-                                <span class="text-xs text-gray-500">(Gestión completa del sistema, incluyendo usuarios)</span>
-                            </label>
-                        </div>
+                        <select id="role" name="role" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="read">Solo Lectura (Ver clientes y proyectos)</option>
+                            <option value="edit">Editor (Crear, editar y eliminar clientes y proyectos)</option>
+                            <option value="admin">Administrador (Gestión completa del sistema)</option>
+                        </select>
+                        <p class="mt-1 text-sm text-gray-500">
+                            Seleccione el nivel de acceso para este usuario
+                        </p>
                     </div>
                 </div>
 

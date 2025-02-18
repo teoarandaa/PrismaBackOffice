@@ -88,16 +88,38 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'role' => 'required|in:read,edit,admin'
         ]);
+
+        $permissions = [
+            'can_read' => false,
+            'can_edit' => false,
+            'is_admin' => false
+        ];
+
+        switch($request->role) {
+            case 'read':
+                $permissions['can_read'] = true;
+                break;
+            case 'edit':
+                $permissions['can_read'] = true;
+                $permissions['can_edit'] = true;
+                break;
+            case 'admin':
+                $permissions['can_read'] = true;
+                $permissions['can_edit'] = true;
+                $permissions['is_admin'] = true;
+                break;
+        }
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'password_visible' => $request->password,
-            'can_read' => $request->has('can_read'),
-            'can_edit' => $request->has('can_edit'),
-            'is_admin' => $request->has('is_admin'),
+            'can_read' => $permissions['can_read'],
+            'can_edit' => $permissions['can_edit'],
+            'is_admin' => $permissions['is_admin'],
         ]);
 
         return redirect()->route('users.index')->with('success', 'Usuario creado exitosamente');
