@@ -8,26 +8,86 @@
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto px-4 py-8">
-        <div class="flex justify-between items-center mb-6">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-800">Proyectos de {{ $cliente->nombre }} {{ $cliente->apellido }}</h1>
-                <p class="text-gray-600">{{ $cliente->empresa ?: 'Sin empresa' }}</p>
-                <div class="mt-4">
-                    <input type="text" 
-                           id="buscadorProyectos" 
-                           placeholder="Buscar proyectos..." 
-                           class="w-full md:w-96 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 mb-4">Proyectos de {{ $cliente->nombre }} {{ $cliente->apellido }}</h1>
+            <div class="w-full">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <input type="text" 
+                               id="buscadorProyectos" 
+                               placeholder="Buscar por nombre de proyecto..." 
+                               class="w-96 h-[42px] px-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <div class="relative inline-block text-left">
+                            <button type="button" 
+                                    onclick="toggleFiltros()"
+                                    class="h-[42px] inline-flex items-center px-4 rounded-lg bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 justify-center">
+                                <svg class="h-5 w-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                                Filtros
+                            </button>
+
+                            <div id="menuFiltros" 
+                                 class="hidden origin-top-right absolute right-0 mt-2 w-80 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none z-50">
+                                <div class="p-4 flex justify-between items-center">
+                                    <h3 class="text-sm font-medium text-gray-900">Filtros</h3>
+                                    <button onclick="resetFiltros()" 
+                                            class="text-sm text-red-600 hover:text-red-800 font-medium flex items-center">
+                                        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                        Resetear filtros
+                                    </button>
+                                </div>
+                                <div class="p-4">
+                                    <h3 class="text-sm font-medium text-gray-900 mb-3">Estado del proyecto</h3>
+                                    <select id="filtroEstado" 
+                                            class="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="todos">Todos los estados</option>
+                                        <option value="En progreso">En progreso</option>
+                                        <option value="Completado">Completados</option>
+                                        <option value="Cancelado">Cancelados</option>
+                                    </select>
+                                </div>
+                                <div class="p-4">
+                                    <h3 class="text-sm font-medium text-gray-900 mb-3">Rango de presupuesto</h3>
+                                    <div class="flex gap-2 items-center">
+                                        <input type="number" id="presupuestoMin" placeholder="Mínimo" 
+                                               class="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <span class="text-gray-500">-</span>
+                                        <input type="number" id="presupuestoMax" placeholder="Máximo"
+                                               class="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                </div>
+                                <div class="p-4">
+                                    <h3 class="text-sm font-medium text-gray-900 mb-3">Rango de fechas</h3>
+                                    <div class="flex gap-2 items-center">
+                                        <input type="date" id="fechaInicio"
+                                               class="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <span class="text-gray-500">-</span>
+                                        <input type="date" id="fechaFin"
+                                               class="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                </div>
+                                <div class="p-4">
+                                    <h3 class="text-sm font-medium text-gray-900 mb-3">Ordenar por</h3>
+                                    <select id="filtroOrden" 
+                                            class="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="recientes">Más recientes</option>
+                                        <option value="antiguos">Más antiguos</option>
+                                        <option value="presupuesto_alto">Mayor presupuesto</option>
+                                        <option value="presupuesto_bajo">Menor presupuesto</option>
+                                        <option value="nombre">Nombre del proyecto</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="window.location.href='{{ route('clientes.index') }}'" 
+                            class="h-[42px] bg-gray-500 hover:bg-gray-700 text-white font-bold px-4 rounded-lg flex items-center justify-center">
+                        Volver
+                    </button>
                 </div>
-            </div>
-            <div class="space-x-4">
-                <button onclick="window.location.href='{{ route('clientes.index') }}'" 
-                        class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                    Volver
-                </button>
-                <button onclick="window.location.href='{{ route('clientes.proyectos.create', $cliente) }}'" 
-                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Nuevo Proyecto
-                </button>
             </div>
         </div>
 
@@ -88,28 +148,129 @@
     </div>
 
     <script>
-        // Función para filtrar proyectos
-        function filtrarProyectos(searchTerm) {
-            const rows = document.querySelectorAll('tbody tr');
-            searchTerm = searchTerm.toLowerCase();
+        function toggleFiltros() {
+            const menu = document.getElementById('menuFiltros');
+            menu.classList.toggle('hidden');
             
-            rows.forEach(row => {
-                const nombre = row.querySelector('td:first-child').textContent.toLowerCase();
-                const estado = row.querySelector('.rounded-full').textContent.toLowerCase();
-                const descripcion = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                
-                if (nombre.includes(searchTerm) || estado.includes(searchTerm) || descripcion.includes(searchTerm)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
+            // Cerrar el menú al hacer clic fuera
+            document.addEventListener('click', function(event) {
+                const isClickInside = menu.contains(event.target) || 
+                                    event.target.closest('button')?.contains(event.target);
+                if (!isClickInside && !menu.classList.contains('hidden')) {
+                    menu.classList.add('hidden');
                 }
             });
         }
 
-        // Buscador de texto
-        document.getElementById('buscadorProyectos').addEventListener('input', (e) => {
-            filtrarProyectos(e.target.value);
-        });
+        function aplicarFiltros() {
+            const searchTerm = document.getElementById('buscadorProyectos').value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            const filtroEstado = document.getElementById('filtroEstado').value;
+            const presupuestoMin = parseFloat(document.getElementById('presupuestoMin').value) || 0;
+            const presupuestoMax = parseFloat(document.getElementById('presupuestoMax').value);
+            const filtroOrden = document.getElementById('filtroOrden').value;
+            
+            rows.forEach(row => {
+                const nombreProyecto = row.querySelector('td:first-child .text-gray-900').textContent.toLowerCase();
+                const descripcion = row.querySelector('td:first-child .text-gray-500').textContent.toLowerCase();
+                const estado = row.querySelector('.rounded-full').textContent.trim();
+                const fechaTexto = row.querySelector('td:nth-child(3)').textContent.trim();
+                const fechaInicioDate = fechaTexto !== 'No definida' ? 
+                    new Date(fechaTexto.split('/').reverse().join('-')) : null;
+                const presupuesto = parseFloat(row.querySelector('td:nth-child(5)').textContent.replace('€', '').replace('.', '').replace(',', '.'));
+                
+                let mostrar = true;
+
+                // Filtro de búsqueda
+                if (searchTerm) {
+                    mostrar = nombreProyecto.includes(searchTerm) || descripcion.includes(searchTerm);
+                }
+
+                // Filtro de estado
+                if (mostrar && filtroEstado !== 'todos') {
+                    mostrar = estado === filtroEstado;
+                }
+
+                // Filtro de presupuesto
+                if (presupuestoMin > 0 || presupuestoMax) {
+                    mostrar = presupuesto >= presupuestoMin && 
+                             (!presupuestoMax || presupuesto <= presupuestoMax);
+                }
+
+                // Filtro de fecha
+                const fechaInicioFiltro = document.getElementById('fechaInicio').value;
+                const fechaFinFiltro = document.getElementById('fechaFin').value;
+                if (mostrar && fechaInicioDate && (fechaInicioFiltro || fechaFinFiltro)) {
+                    const fechaMinima = new Date(fechaInicioFiltro);
+                    mostrar = fechaInicioDate >= fechaMinima;
+                    if (fechaFinFiltro && mostrar) {
+                        const fechaMaxima = new Date(fechaFinFiltro);
+                        mostrar = fechaInicioDate <= fechaMaxima;
+                    }
+                }
+
+                row.style.display = mostrar ? '' : 'none';
+            });
+            
+            // Ordenar las filas
+            const tbody = document.querySelector('tbody');
+            const rowsArray = Array.from(rows);
+            
+            rowsArray.sort((a, b) => {
+                switch(filtroOrden) {
+                    case 'recientes':
+                        const fechaB = b.querySelector('td:nth-child(3)').textContent.trim();
+                        const fechaA = a.querySelector('td:nth-child(3)').textContent.trim();
+                        if (fechaB === 'No definida') return 1;
+                        if (fechaA === 'No definida') return -1;
+                        return new Date(fechaB.split('/').reverse().join('-')) - 
+                               new Date(fechaA.split('/').reverse().join('-'));
+                    case 'antiguos':
+                        const fechaB2 = b.querySelector('td:nth-child(3)').textContent.trim();
+                        const fechaA2 = a.querySelector('td:nth-child(3)').textContent.trim();
+                        if (fechaB2 === 'No definida') return -1;
+                        if (fechaA2 === 'No definida') return 1;
+                        return new Date(fechaA2.split('/').reverse().join('-')) - 
+                               new Date(fechaB2.split('/').reverse().join('-'));
+                    case 'presupuesto_alto':
+                        return parseFloat(b.querySelector('td:nth-child(5)').textContent.replace('€', '').replace('.', '').replace(',', '.')) - 
+                               parseFloat(a.querySelector('td:nth-child(5)').textContent.replace('€', '').replace('.', '').replace(',', '.'));
+                    case 'presupuesto_bajo':
+                        return parseFloat(a.querySelector('td:nth-child(5)').textContent.replace('€', '').replace('.', '').replace(',', '.')) - 
+                               parseFloat(b.querySelector('td:nth-child(5)').textContent.replace('€', '').replace('.', '').replace(',', '.'));
+                    case 'nombre':
+                        return a.querySelector('td:first-child .text-gray-900').textContent
+                            .localeCompare(b.querySelector('td:first-child .text-gray-900').textContent);
+                    default:
+                        return 0;
+                }
+            });
+            
+            rowsArray.forEach(row => tbody.appendChild(row));
+        }
+
+        // Eventos para los filtros
+        document.getElementById('buscadorProyectos').addEventListener('input', aplicarFiltros);
+        document.getElementById('filtroEstado').addEventListener('change', aplicarFiltros);
+        document.getElementById('presupuestoMin').addEventListener('input', aplicarFiltros);
+        document.getElementById('presupuestoMax').addEventListener('input', aplicarFiltros);
+        document.getElementById('fechaInicio').addEventListener('change', aplicarFiltros);
+        document.getElementById('fechaFin').addEventListener('change', aplicarFiltros);
+        document.getElementById('filtroOrden').addEventListener('change', aplicarFiltros);
+
+        function resetFiltros() {
+            document.getElementById('buscadorProyectos').value = '';
+            document.getElementById('filtroEstado').value = 'todos';
+            document.getElementById('presupuestoMin').value = '';
+            document.getElementById('presupuestoMax').value = '';
+            document.getElementById('fechaInicio').value = '';
+            document.getElementById('fechaFin').value = '';
+            document.getElementById('filtroOrden').value = 'recientes';
+            aplicarFiltros();
+        }
+
+        // Aplicar filtros iniciales
+        aplicarFiltros();
 
         function eliminarProyecto(proyectoId) {
             if (confirm('¿Estás seguro de que deseas eliminar este proyecto?')) {
