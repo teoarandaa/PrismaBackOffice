@@ -8,18 +8,29 @@
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto px-4 py-8">
-        <div class="max-w-2xl mx-auto">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-800">Detalles del Proyecto</h1>
-                    <p class="text-gray-600">Cliente: {{ $cliente->nombre }} {{ $cliente->apellido }}</p>
+        <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-6">
+                    <img src="{{ asset('images/prisma_logo.png') }}" alt="Logo de la empresa" class="h-20 w-auto">
+                    <div class="border-l-2 border-gray-200 pl-6">
+                        <h1 class="text-3xl font-bold text-gray-800">Detalles del Proyecto</h1>
+                        <p class="text-gray-600 mt-1">{{ $cliente->nombre }} {{ $cliente->apellido }}</p>
+                        <p class="text-gray-500 text-sm">{{ $cliente->email }}</p>
+                    </div>
                 </div>
+            </div>
+            <div class="mt-6 flex justify-end items-center">
                 <button onclick="window.location.href='{{ route('clientes.proyectos.index', $cliente) }}'" 
-                        class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                        class="h-[42px] bg-gray-500 hover:bg-gray-700 text-white font-bold px-6 rounded-lg flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
                     Volver
                 </button>
             </div>
+        </div>
 
+        <div class="max-w-2xl mx-auto">
             <div class="bg-white shadow-md rounded-lg p-6">
                 <div class="space-y-4">
                     <div>
