@@ -42,7 +42,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">Proyecto</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">Cliente</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">Tipo</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">Inicio</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">Inicio Previsto</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">Fin Estimado</th>
                             </tr>
                         </thead>
@@ -52,8 +52,8 @@
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $proyecto->nombre_proyecto }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $proyecto->cliente->nombre }} {{ $proyecto->cliente->apellido }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap capitalize">{{ $proyecto->tipo }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $proyecto->fecha_inicio ? $proyecto->fecha_inicio->format('d/m/Y') : 'N/A' }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $proyecto->fecha_finalizacion ? $proyecto->fecha_finalizacion->format('d/m/Y') : 'N/A' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $proyecto->fecha_inicio }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $proyecto->fecha_finalizacion }}</td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -98,33 +98,37 @@
                 </div>
             </div>
 
-            <!-- Proyectos Pendientes -->
+            <!-- Proyectos Cancelados -->
             <div>
-                <h2 class="text-2xl font-bold text-yellow-600 mb-4">Pendientes de Inicio ({{ $proyectos['pendientes']->total() }})</h2>
+                <h2 class="text-2xl font-bold text-red-600 mb-4">Cancelados ({{ $proyectos['cancelados']->total() }})</h2>
                 <div class="bg-white rounded-lg shadow overflow-hidden">
                     <table class="min-w-full">
-                        <thead class="bg-yellow-50">
+                        <thead class="bg-red-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-yellow-800 uppercase tracking-wider">Proyecto</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-yellow-800 uppercase tracking-wider">Cliente</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-yellow-800 uppercase tracking-wider">Tipo</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-yellow-800 uppercase tracking-wider">Inicio Previsto</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-red-800 uppercase tracking-wider">Proyecto</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-red-800 uppercase tracking-wider">Cliente</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-red-800 uppercase tracking-wider">Tipo</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-red-800 uppercase tracking-wider">Inicio</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-red-800 uppercase tracking-wider">Fin Estimado</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-red-800 uppercase tracking-wider">Cancelado</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($proyectos['pendientes'] as $proyecto)
+                            @foreach($proyectos['cancelados'] as $proyecto)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $proyecto->nombre_proyecto }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $proyecto->cliente->nombre }} {{ $proyecto->cliente->apellido }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap capitalize">{{ $proyecto->tipo }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $proyecto->fecha_inicio ? $proyecto->fecha_inicio->format('d/m/Y') : 'No definida' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $proyecto->fecha_inicio }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $proyecto->fecha_finalizacion }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $proyecto->updated_at }}</td>
                             </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
                 <div class="mt-4">
-                    {{ $proyectos['pendientes']->links() }}
+                    {{ $proyectos['cancelados']->links() }}
                 </div>
             </div>
         </div>

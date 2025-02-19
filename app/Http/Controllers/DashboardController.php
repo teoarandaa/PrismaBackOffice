@@ -240,10 +240,10 @@ class DashboardController extends Controller
                 ->orderBy('updated_at', 'desc')
                 ->paginate(10, ['*'], 'completados'),
 
-            'pendientes' => Proyecto::where('estado', 'Pendiente')
+            'cancelados' => Proyecto::where('estado', 'Cancelado')
                 ->with('cliente')
-                ->orderBy('fecha_inicio', 'asc')
-                ->paginate(10, ['*'], 'pendientes')
+                ->orderBy('updated_at', 'desc')
+                ->paginate(10, ['*'], 'cancelados')
         ];
 
         return view('dashboard.proyectos-activos-detalle', compact('proyectos'));
