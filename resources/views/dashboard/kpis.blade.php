@@ -297,6 +297,7 @@
                     label: 'Ingresos Mensuales',
                     data: {!! json_encode($tendencias['ingresos']) !!},
                     borderColor: '#10B981',
+                    backgroundColor: '#10B981',
                     tension: 0.1,
                     fill: false
                 }]
@@ -304,6 +305,15 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            usePointStyle: false,
+                            boxWidth: 40,
+                            padding: 20
+                        }
+                    }
+                },
                 scales: {
                     y: {
                         beginAtZero: true,
@@ -325,6 +335,7 @@
                     label: 'Tiempo Medio (días)',
                     data: {!! json_encode($tendencias['tiempos']) !!},
                     borderColor: '#8B5CF6',
+                    backgroundColor: '#8B5CF6',
                     tension: 0.1,
                     fill: false
                 }]
@@ -332,6 +343,15 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            usePointStyle: false,
+                            boxWidth: 40,
+                            padding: 20
+                        }
+                    }
+                },
                 scales: {
                     y: {
                         beginAtZero: true,
@@ -353,6 +373,7 @@
                     label: 'Tasa de Éxito (%)',
                     data: {!! json_encode($tendencias['tasas_exito']) !!},
                     borderColor: '#F59E0B',
+                    backgroundColor: '#F59E0B',
                     tension: 0.1,
                     fill: false
                 }]
@@ -360,6 +381,15 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            usePointStyle: false,
+                            boxWidth: 40,
+                            padding: 20
+                        }
+                    }
+                },
                 scales: {
                     y: {
                         beginAtZero: true,
