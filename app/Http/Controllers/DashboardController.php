@@ -309,4 +309,53 @@ class DashboardController extends Controller
 
         return view('dashboard.tiempo-desarrollo-detalle', compact('tiempos', 'ordenTiempo'));
     }
+
+    public function tasaExitoDetalle()
+    {
+        $estadisticas = [
+            'general' => [
+                'total' => Proyecto::count(),
+                'completados' => Proyecto::where('estado', 'Completado')->count(),
+                'cancelados' => Proyecto::where('estado', 'Cancelado')->count(),
+                'en_progreso' => Proyecto::where('estado', 'En progreso')->count(),
+            ],
+            
+            'por_tipo' => [
+                'app' => [
+                    'total' => Proyecto::where('tipo', 'app')->count(),
+                    'completados' => Proyecto::where('tipo', 'app')->where('estado', 'Completado')->count(),
+                ],
+                'web' => [
+                    'total' => Proyecto::where('tipo', 'web')->count(),
+                    'completados' => Proyecto::where('tipo', 'web')->where('estado', 'Completado')->count(),
+                ]
+            ],
+
+            'proyectos' => Proyecto::with('cliente')
+                ->select('*')
+                ->selectRaw('CASE 
+                    WHEN estado = "Completado" THEN 1
+                    WHEN estado = "Cancelado" THEN 0
+                    ELSE NULL
+                    END as exitoso')
+                ->whereIn('estado', ['Completado', 'Cancelado'])
+                ->orderBy('updated_at', 'desc')
+                ->paginate(10)
+        ];
+
+        // Calcular tasas
+        $estadisticas['general']['tasa_exito'] = $estadisticas['general']['total'] > 0 
+            ? round(($estadisticas['general']['completados'] / $estadisticas['general']['total']) * 100, 1) 
+            : 0;
+
+        $estadisticas['por_tipo']['app']['tasa_exito'] = $estadisticas['por_tipo']['app']['total'] > 0 
+            ? round(($estadisticas['por_tipo']['app']['completados'] / $estadisticas['por_tipo']['app']['total']) * 100, 1) 
+            : 0;
+
+        $estadisticas['por_tipo']['web']['tasa_exito'] = $estadisticas['por_tipo']['web']['total'] > 0 
+            ? round(($estadisticas['por_tipo']['web']['completados'] / $estadisticas['por_tipo']['web']['total']) * 100, 1) 
+            : 0;
+
+        return view('dashboard.tasa-exito-detalle', compact('estadisticas'));
+    }
 } 

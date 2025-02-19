@@ -49,7 +49,8 @@
                     <p class="text-sm text-purple-600">Promedio general</p>
                 </div>
                 
-                <div class="bg-yellow-50 p-6 rounded-lg">
+                <div class="bg-yellow-50 p-6 rounded-lg cursor-pointer hover:bg-yellow-100 transition-colors"
+                     onclick="window.location.href='{{ route('dashboard.tasa-exito') }}'">
                     <h3 class="text-yellow-800 text-lg font-semibold mb-2">Tasa de Éxito</h3>
                     <p class="text-3xl font-bold text-yellow-600">{{ $tasaExito }}%</p>
                     <p class="text-sm text-yellow-600">Proyectos completados</p>

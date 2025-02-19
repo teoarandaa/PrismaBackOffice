@@ -88,4 +88,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/proyectos-activos', [DashboardController::class, 'proyectosActivosDetalle'])->name('dashboard.proyectos-activos');
     Route::get('/dashboard/ingresos', [DashboardController::class, 'ingresosDetalle'])->name('dashboard.ingresos');
     Route::get('/dashboard/tiempo-desarrollo', [DashboardController::class, 'tiempoDesarrolloDetalle'])->name('dashboard.tiempo-desarrollo');
+    Route::get('/dashboard/tasa-exito', [DashboardController::class, 'tasaExitoDetalle'])->name('dashboard.tasa-exito');
 });
