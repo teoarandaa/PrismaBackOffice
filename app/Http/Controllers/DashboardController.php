@@ -373,33 +373,78 @@ class DashboardController extends Controller
 
     public function tiempoDesarrolloDetalle(Request $request)
     {
-        $ordenTiempo = $request->get('orden', 'desc'); // Por defecto ordenamos de mayor a menor
+        // Consulta base para proyectos
+        $queryProyectos = Proyecto::with('cliente');
 
-        $tiempos = [
-            'por_tipo' => Proyecto::select(
-                'tipo',
-                DB::raw('AVG(DATEDIFF(updated_at, fecha_inicio)) as tiempo_medio'),
-                DB::raw('COUNT(*) as total_proyectos')
-            )
-            ->where('estado', 'Completado')
-            ->groupBy('tipo')
-            ->get(),
+        // Obtener el orden
+        $ordenTiempo = $request->input('orden', 'desc');
 
-            'proyectos' => Proyecto::with('cliente')
-                ->where('estado', 'Completado')
+        // Aplicar filtros si existen
+        if ($request->filled('proyecto')) {
+            $queryProyectos->where('nombre_proyecto', 'LIKE', '%' . $request->proyecto . '%');
+        }
+
+        if ($request->filled('cliente')) {
+            $queryProyectos->whereHas('cliente', function($q) use ($request) {
+                $q->where(DB::raw("CONCAT(nombre, ' ', apellido)"), 'LIKE', '%' . $request->cliente . '%');
+            });
+        }
+
+        if ($request->filled('tipo')) {
+            $queryProyectos->where('tipo', $request->tipo);
+        }
+
+        if ($request->filled('fecha_inicio')) {
+            $queryProyectos->where('fecha_inicio', '>=', $request->fecha_inicio);
+        }
+
+        if ($request->filled('fecha_fin')) {
+            $queryProyectos->where('fecha_finalizacion', '<=', $request->fecha_fin);
+        }
+
+        if ($request->filled('duracion_min')) {
+            $queryProyectos->whereRaw('DATEDIFF(fecha_finalizacion, fecha_inicio) >= ?', [$request->duracion_min]);
+        }
+
+        if ($request->filled('duracion_max')) {
+            $queryProyectos->whereRaw('DATEDIFF(fecha_finalizacion, fecha_inicio) <= ?', [$request->duracion_max]);
+        }
+
+        // Preparar datos para la vista
+        $proyectos = [
+            'promedio_general' => DB::table('proyectos')
+                ->whereNotNull('fecha_finalizacion')
+                ->whereNotNull('fecha_inicio')
+                ->selectRaw('AVG(DATEDIFF(fecha_finalizacion, fecha_inicio)) as tiempo_medio')
+                ->first()->tiempo_medio,
+            'por_tipo' => DB::table('proyectos')
                 ->select(
-                    '*',
-                    DB::raw('DATEDIFF(updated_at, fecha_inicio) as dias_desarrollo')
+                    'tipo',
+                    DB::raw('AVG(DATEDIFF(fecha_finalizacion, fecha_inicio)) as promedio_dias'),
+                    DB::raw('COUNT(*) as total_proyectos')
                 )
-                ->orderBy('dias_desarrollo', $ordenTiempo)
-                ->paginate(10),
-
-            'promedio_general' => Proyecto::where('estado', 'Completado')
-                ->select(DB::raw('AVG(DATEDIFF(updated_at, fecha_inicio)) as tiempo_medio'))
-                ->first()
+                ->whereNotNull('fecha_finalizacion')
+                ->whereNotNull('fecha_inicio')
+                ->groupBy('tipo')
+                ->get(),
+            'por_mes' => DB::table('proyectos')
+                ->select(
+                    DB::raw('MONTH(fecha_inicio) as mes'),
+                    DB::raw('YEAR(fecha_inicio) as año'),
+                    DB::raw('AVG(DATEDIFF(fecha_finalizacion, fecha_inicio)) as promedio_dias')
+                )
+                ->whereNotNull('fecha_finalizacion')
+                ->whereNotNull('fecha_inicio')
+                ->groupBy('mes', 'año')
+                ->orderBy('año', 'desc')
+                ->orderBy('mes', 'desc')
+                ->paginate(12),
+            'proyectos' => $queryProyectos
+                ->orderByRaw('DATEDIFF(fecha_finalizacion, fecha_inicio) ' . $ordenTiempo)
+                ->paginate(10)
         ];
 
-        return view('dashboard.tiempo-desarrollo-detalle', compact('tiempos', 'ordenTiempo'));
+        return view('dashboard.tiempo-desarrollo-detalle', compact('proyectos', 'ordenTiempo'));
     }
 
     public function tasaExitoDetalle()
