@@ -134,7 +134,7 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Fecha de Finalización</label>
+                            <label class="block text-sm font-medium text-gray-700">Fecha Finalización</label>
                             <input type="date" 
                                    name="fecha_fin" 
                                    value="{{ request('fecha_fin') }}"
@@ -160,7 +160,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-yellow-800 uppercase tracking-wider">Cliente</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-yellow-800 uppercase tracking-wider">Tipo</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-yellow-800 uppercase tracking-wider">Estado</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-yellow-800 uppercase tracking-wider">Fecha</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-yellow-800 uppercase tracking-wider">Fecha Finalización</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">

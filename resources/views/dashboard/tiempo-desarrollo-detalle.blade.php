@@ -127,14 +127,14 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Fecha Inicio</label>
+                            <label class="block text-sm font-medium text-gray-700">Inicio Previsto</label>
                             <input type="date" 
                                    name="fecha_inicio" 
                                    value="{{ request('fecha_inicio') }}"
                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Fecha Fin</label>
+                            <label class="block text-sm font-medium text-gray-700">Fin Estimado</label>
                             <input type="date" 
                                    name="fecha_fin" 
                                    value="{{ request('fecha_fin') }}"
@@ -175,8 +175,9 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Proyecto</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Cliente</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Tipo</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Inicio</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Fin</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Inicio Previsto</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Fin Estimado</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Fecha Completado</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Duración</th>
                         </tr>
                     </thead>
@@ -188,6 +189,13 @@
                             <td class="px-6 py-4 whitespace-nowrap capitalize">{{ $proyecto->tipo }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">{{ $proyecto->fecha_inicio }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">{{ $proyecto->fecha_finalizacion }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($proyecto->estado === 'Completado')
+                                    {{ $proyecto->updated_at->format('Y-m-d H:i:s') }}
+                                @else
+                                    <span class="text-gray-500">-</span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap">{{ $proyecto->dias_desarrollo }} días</td>
                         </tr>
                         @endforeach

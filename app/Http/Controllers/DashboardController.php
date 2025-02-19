@@ -373,83 +373,71 @@ class DashboardController extends Controller
 
     public function tiempoDesarrolloDetalle(Request $request)
     {
-        // Consulta base para proyectos
-        $queryProyectos = Proyecto::with('cliente')
-            ->selectRaw('*, DATEDIFF(updated_at, fecha_inicio) as dias_desarrollo')
-            ->whereNotNull('fecha_inicio')
-            ->whereNotNull('updated_at')
-            ->where('estado', 'Completado');
-
-        // Obtener el orden
-        $ordenTiempo = $request->input('orden', 'desc');
+        $query = Proyecto::with('cliente')
+            ->whereNotNull('fecha_inicio');
 
         // Aplicar filtros si existen
         if ($request->filled('proyecto')) {
-            $queryProyectos->where('nombre_proyecto', 'LIKE', '%' . $request->proyecto . '%');
+            $query->where('nombre_proyecto', 'LIKE', '%' . $request->proyecto . '%');
         }
-
         if ($request->filled('cliente')) {
-            $queryProyectos->whereHas('cliente', function($q) use ($request) {
+            $query->whereHas('cliente', function($q) use ($request) {
                 $q->where(DB::raw("CONCAT(nombre, ' ', apellido)"), 'LIKE', '%' . $request->cliente . '%');
             });
         }
-
         if ($request->filled('tipo')) {
-            $queryProyectos->where('tipo', $request->tipo);
+            $query->where('tipo', $request->tipo);
         }
-
         if ($request->filled('fecha_inicio')) {
-            $queryProyectos->where('fecha_inicio', '>=', $request->fecha_inicio);
+            $query->whereDate('fecha_inicio', '>=', $request->fecha_inicio);
         }
-
         if ($request->filled('fecha_fin')) {
-            $queryProyectos->where('fecha_finalizacion', '<=', $request->fecha_fin);
+            $query->whereDate('fecha_finalizacion', '<=', $request->fecha_fin);
         }
-
         if ($request->filled('duracion_min')) {
-            $queryProyectos->whereRaw('DATEDIFF(fecha_finalizacion, fecha_inicio) >= ?', [$request->duracion_min]);
+            $query->whereRaw('DATEDIFF(CASE WHEN estado = "Completado" THEN updated_at ELSE CURRENT_TIMESTAMP END, fecha_inicio) >= ?', [$request->duracion_min]);
         }
-
         if ($request->filled('duracion_max')) {
-            $queryProyectos->whereRaw('DATEDIFF(fecha_finalizacion, fecha_inicio) <= ?', [$request->duracion_max]);
+            $query->whereRaw('DATEDIFF(CASE WHEN estado = "Completado" THEN updated_at ELSE CURRENT_TIMESTAMP END, fecha_inicio) <= ?', [$request->duracion_max]);
         }
 
-        // Preparar datos para la vista
-        $proyectos = [
-            'promedio_general' => Proyecto::whereNotNull('fecha_inicio')
-                ->whereNotNull('updated_at')
-                ->where('estado', 'Completado')
-                ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as tiempo_medio')
-                ->value('tiempo_medio'),
-            'por_tipo' => DB::table('proyectos')
-                ->select(
-                    'tipo',
-                    DB::raw('AVG(DATEDIFF(updated_at, fecha_inicio)) as promedio_dias'),
-                    DB::raw('COUNT(*) as total_proyectos')
-                )
-                ->whereNotNull('fecha_inicio')
-                ->whereNotNull('updated_at')
-                ->where('estado', 'Completado')
-                ->groupBy('tipo')
-                ->get(),
-            'por_mes' => DB::table('proyectos')
-                ->select(
-                    DB::raw('MONTH(fecha_inicio) as mes'),
-                    DB::raw('YEAR(fecha_inicio) as año'),
-                    DB::raw('AVG(DATEDIFF(updated_at, fecha_inicio)) as promedio_dias')
-                )
-                ->whereNotNull('fecha_inicio')
-                ->whereNotNull('updated_at')
-                ->groupBy('mes', 'año')
-                ->orderBy('año', 'desc')
-                ->orderBy('mes', 'desc')
-                ->paginate(12),
-            'proyectos' => $queryProyectos
-                ->orderByRaw('DATEDIFF(updated_at, fecha_inicio) ' . $ordenTiempo)
-                ->paginate(10)
-        ];
+        // Ordenar por tiempo de desarrollo
+        $ordenTiempo = $request->get('orden', 'desc');
+        $query->orderByRaw('DATEDIFF(CASE WHEN estado = "Completado" THEN updated_at ELSE CURRENT_TIMESTAMP END, fecha_inicio) ' . $ordenTiempo);
 
-        return view('dashboard.tiempo-desarrollo-detalle', compact('proyectos', 'ordenTiempo'));
+        $proyectos = $query->paginate(10);
+
+        // Calcular días de desarrollo para cada proyecto
+        foreach ($proyectos as $proyecto) {
+            $fechaInicio = Carbon::parse($proyecto->fecha_inicio);
+            $fechaFin = $proyecto->estado === 'Completado' 
+                ? Carbon::parse($proyecto->updated_at)
+                : now();
+            $proyecto->dias_desarrollo = number_format($fechaInicio->diffInDays($fechaFin), 2);
+        }
+
+        // Calcular promedio general
+        $promedio_general = number_format(Proyecto::whereNotNull('fecha_inicio')
+            ->where('estado', 'Completado')
+            ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as promedio_dias')
+            ->first()
+            ->promedio_dias, 2);
+
+        // Calcular promedios por tipo
+        $por_tipo = Proyecto::whereNotNull('fecha_inicio')
+            ->where('estado', 'Completado')
+            ->selectRaw('tipo, 
+                        ROUND(AVG(DATEDIFF(updated_at, fecha_inicio)), 2) as promedio_dias,
+                        COUNT(*) as total_proyectos')
+            ->groupBy('tipo')
+            ->get();
+
+        return view('dashboard.tiempo-desarrollo-detalle', compact('proyectos', 'ordenTiempo'))
+            ->with('proyectos', [
+                'proyectos' => $proyectos,
+                'promedio_general' => $promedio_general,
+                'por_tipo' => $por_tipo
+            ]);
     }
 
     public function tasaExitoDetalle(Request $request)
