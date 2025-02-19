@@ -6,6 +6,7 @@ use App\Models\Proyecto;
 use App\Models\Cliente;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -247,5 +248,32 @@ class DashboardController extends Controller
         ];
 
         return view('dashboard.proyectos-activos-detalle', compact('proyectos'));
+    }
+
+    public function ingresosDetalle(Request $request)
+    {
+        $ordenIngresos = $request->get('orden', 'desc'); // Por defecto ordenamos de mayor a menor
+
+        $ingresos = [
+            'por_tipo' => Proyecto::select('tipo', DB::raw('SUM(presupuesto) as total'))
+                ->groupBy('tipo')
+                ->get(),
+            
+            'por_mes' => Proyecto::select(
+                    DB::raw('YEAR(created_at) as año'),
+                    DB::raw('MONTH(created_at) as mes'),
+                    DB::raw('SUM(presupuesto) as total')
+                )
+                ->groupBy('año', 'mes')
+                ->orderBy('año', 'desc')
+                ->orderBy('mes', 'desc')
+                ->paginate(12, ['*'], 'por_mes'),
+
+            'proyectos' => Proyecto::with('cliente')
+                ->orderBy('presupuesto', $ordenIngresos)
+                ->paginate(10, ['*'], 'proyectos')
+        ];
+
+        return view('dashboard.ingresos-detalle', compact('ingresos', 'ordenIngresos'));
     }
 } 
