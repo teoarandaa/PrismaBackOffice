@@ -87,18 +87,29 @@ class ProyectoController extends Controller
         }
     }
 
-    public function destroy(Cliente $cliente, Proyecto $proyecto)
+    public function destroy(Proyecto $proyecto)
     {
         try {
-            if ($proyecto->id_cliente !== $cliente->id) {
-                return response()->json(['message' => 'El proyecto no pertenece a este cliente'], 403);
+            \Log::info('Intentando eliminar proyecto: ' . $proyecto->id);
+            
+            if (!$proyecto) {
+                \Log::error('Proyecto no encontrado');
+                return response()->json(['message' => 'Proyecto no encontrado'], 404);
             }
 
             $proyecto->delete();
-            return response()->json(['message' => 'Proyecto eliminado correctamente']);
+            \Log::info('Proyecto eliminado correctamente');
+            
+            return response()->json([
+                'message' => 'Proyecto eliminado correctamente',
+                'proyecto_id' => $proyecto->id
+            ]);
         } catch (\Exception $e) {
             \Log::error('Error al eliminar proyecto: ' . $e->getMessage());
-            return response()->json(['message' => 'Error al eliminar el proyecto'], 500);
+            return response()->json([
+                'message' => 'Error al eliminar el proyecto',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Todos los Proyectos</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto px-4 py-8">
@@ -128,16 +129,14 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @foreach($proyectos as $proyecto)
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-medium text-gray-900">
-                                {{ $proyecto->cliente->nombre }} {{ $proyecto->cliente->apellido }}
-                            </div>
-                            <div class="text-sm text-gray-500">{{ $proyecto->cliente->empresa }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                    <tr data-proyecto-id="{{ $proyecto->id }}">
+                        <td class="px-6 py-4 whitespace-nowrap" data-tipo="{{ $proyecto->tipo }}">
                             <div class="text-sm font-medium text-gray-900">{{ $proyecto->nombre_proyecto }}</div>
                             <div class="text-sm text-gray-500">{{ Str::limit($proyecto->descripcion, 50) }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ $proyecto->cliente->nombre }} {{ $proyecto->cliente->apellido }}</div>
+                            <div class="text-sm text-gray-500">{{ $proyecto->cliente->empresa }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
@@ -153,13 +152,21 @@
                             {{ $proyecto->fecha_finalizacion ? date('d/m/Y', strtotime($proyecto->fecha_finalizacion)) : 'No definida' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            €{{ number_format($proyecto->presupuesto, 2, ',', '.') }}
+                            {{ number_format($proyecto->presupuesto, 2, ',', '.') }} €
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                            <a href="{{ route('clientes.proyectos.show', [$proyecto->cliente, $proyecto]) }}"
-                               class="text-blue-600 hover:text-blue-900">Detalles</a>
-                            <a href="{{ route('clientes.proyectos.edit', [$proyecto->cliente, $proyecto]) }}"
-                               class="text-yellow-600 hover:text-yellow-900">Editar</a>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <a href="{{ route('clientes.proyectos.show', [$proyecto->cliente, $proyecto]) }}" 
+                                   class="text-indigo-600 hover:text-indigo-900">Ver</a>
+                                @if(auth()->user()->can_edit || auth()->user()->is_admin)
+                                    <a href="{{ route('clientes.proyectos.edit', [$proyecto->cliente, $proyecto]) }}" 
+                                       class="text-yellow-600 hover:text-yellow-900">Editar</a>
+                                    <button onclick="eliminarProyecto({{ $proyecto->id }}, {{ $proyecto->cliente->id }})"
+                                            class="text-red-600 hover:text-red-900 cursor-pointer">
+                                        Eliminar
+                                    </button>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                     @endforeach
@@ -189,8 +196,8 @@
             let resultadosEncontrados = false;
             
             rows.forEach(row => {
-                const clienteNombre = row.querySelector('td:first-child').textContent.toLowerCase();
-                const proyectoNombre = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                const clienteNombre = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                const proyectoNombre = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
                 const estado = row.querySelector('td:nth-child(3) span').textContent.trim();
                 const fechaTexto = row.querySelector('td:nth-child(4)').textContent.trim();
                 const fechaInicioDate = fechaTexto !== 'No definida' ? 
@@ -268,9 +275,9 @@
                         return parseFloat(a.querySelector('td:nth-child(6)').textContent.replace('€', '').replace('.', '').replace(',', '.')) - 
                                parseFloat(b.querySelector('td:nth-child(6)').textContent.replace('€', '').replace('.', '').replace(',', '.'));
                     case 'nombre':
-                        return a.querySelector('td:nth-child(2)').textContent.localeCompare(b.querySelector('td:nth-child(2)').textContent);
+                        return a.querySelector('td:nth-child(1)').textContent.localeCompare(b.querySelector('td:nth-child(1)').textContent);
                     case 'cliente':
-                        return a.querySelector('td:first-child').textContent.localeCompare(b.querySelector('td:first-child').textContent);
+                        return a.querySelector('td:nth-child(2)').textContent.localeCompare(b.querySelector('td:nth-child(2)').textContent);
                     default:
                         return 0;
                 }
@@ -300,6 +307,47 @@
             document.getElementById('fechaFin').value = '';
             document.getElementById('filtroOrden').value = 'recientes';
             aplicarFiltros();
+        }
+
+        function eliminarProyecto(proyectoId, clienteId) {
+            if (confirm('¿Estás seguro de que deseas eliminar este proyecto?')) {
+                const token = document.querySelector('meta[name="csrf-token"]').content;
+                console.log('Intentando eliminar proyecto:', proyectoId);
+                console.log('Token CSRF:', token);
+
+                fetch(`/proyectos/${proyectoId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    console.log('Respuesta status:', response.status);
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            console.error('Error response:', text);
+                            throw new Error('Error al eliminar el proyecto');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Éxito:', data);
+                    alert('Proyecto eliminado correctamente');
+                    const fila = document.querySelector(`tr[data-proyecto-id="${proyectoId}"]`);
+                    if (fila) {
+                        fila.remove();
+                    } else {
+                        console.log('No se encontró la fila a eliminar');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error detallado:', error);
+                    alert('Error al eliminar el proyecto: ' + error.message);
+                });
+            }
         }
     </script>
 </body>

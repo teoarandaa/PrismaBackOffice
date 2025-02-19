@@ -182,6 +182,7 @@
                      data-cliente-id="{{ $cliente->id }}"
                      data-num-proyectos="{{ $cliente->proyectos->count() }}"
                      data-estados="{{ json_encode($cliente->proyectos->pluck('estado')->unique()->values()) }}"
+                     data-tipos="{{ json_encode($cliente->proyectos->pluck('tipo')->unique()->values()) }}"
                      data-fecha="{{ $cliente->created_at }}">
                     <div class="flex justify-between items-start mb-4">
                         <div>
@@ -259,6 +260,7 @@
             const searchTerm = document.getElementById('buscadorClientes').value.toLowerCase();
             const filtroProyectos = document.getElementById('filtroProyectos').value;
             const filtroEstado = document.getElementById('filtroEstado').value;
+            const filtroTipo = document.getElementById('filtroTipo').value;
             const filtroOrden = document.getElementById('filtroOrden').value;
             let resultadosEncontrados = false;
             
@@ -268,6 +270,7 @@
                 const empresa = card.querySelector('.text-gray-500').textContent.toLowerCase();
                 const numProyectos = parseInt(card.getAttribute('data-num-proyectos')) || 0;
                 const estados = JSON.parse(card.getAttribute('data-estados') || '[]');
+                const tipos = JSON.parse(card.getAttribute('data-tipos') || '[]');
                 
                 let mostrar = true;
                 
@@ -298,6 +301,11 @@
                 // Filtro de estado de proyectos
                 if (mostrar && filtroEstado !== 'todos') {
                     mostrar = estados.includes(filtroEstado);
+                }
+                
+                // Filtro de tipo de proyecto
+                if (mostrar && filtroTipo !== 'todos') {
+                    mostrar = tipos.includes(filtroTipo);
                 }
                 
                 card.style.display = mostrar ? '' : 'none';
@@ -334,6 +342,7 @@
         document.getElementById('buscadorClientes').addEventListener('input', aplicarFiltros);
         document.getElementById('filtroProyectos').addEventListener('change', aplicarFiltros);
         document.getElementById('filtroEstado').addEventListener('change', aplicarFiltros);
+        document.getElementById('filtroTipo').addEventListener('change', aplicarFiltros);
         document.getElementById('filtroOrden').addEventListener('change', aplicarFiltros);
 
         function eliminarCliente(clienteId) {
@@ -372,6 +381,7 @@
             document.getElementById('buscadorClientes').value = '';
             document.getElementById('filtroProyectos').value = 'todos';
             document.getElementById('filtroEstado').value = 'todos';
+            document.getElementById('filtroTipo').value = 'todos';
             document.getElementById('filtroOrden').value = 'nombre';
             aplicarFiltros();
         }

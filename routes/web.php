@@ -75,4 +75,8 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::post('/logout', [AuthController::class, 'webLogout'])->name('logout');
+
+    Route::delete('/proyectos/{proyecto}', [ProyectoController::class, 'destroy'])
+        ->name('proyectos.destroy')
+        ->middleware(['auth']);
 });

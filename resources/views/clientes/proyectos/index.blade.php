@@ -169,21 +169,19 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             €{{ number_format($proyecto->presupuesto, 2, ',', '.') }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                            <a href="{{ route('clientes.proyectos.show', [$cliente, $proyecto]) }}"
-                                    class="text-blue-600 hover:text-blue-900">
-                                Ver
-                            </a>
-                            @if(auth()->user()->can_edit || auth()->user()->is_admin)
-                                <a href="{{ route('clientes.proyectos.edit', [$cliente, $proyecto]) }}"
-                                        class="text-yellow-600 hover:text-yellow-900">
-                                    Editar
-                                </a>
-                                <button onclick="eliminarProyecto({{ $proyecto->id }})"
-                                        class="text-red-600 hover:text-red-900">
-                                    Eliminar
-                                </button>
-                            @endif
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <a href="{{ route('clientes.proyectos.show', [$cliente, $proyecto]) }}" 
+                                   class="text-indigo-600 hover:text-indigo-900">Ver</a>
+                                @if(auth()->user()->can_edit || auth()->user()->is_admin)
+                                    <a href="{{ route('clientes.proyectos.edit', [$cliente, $proyecto]) }}" 
+                                       class="text-yellow-600 hover:text-yellow-900">Editar</a>
+                                    <button onclick="eliminarProyecto({{ $proyecto->id }})"
+                                            class="text-red-600 hover:text-red-900">
+                                        Eliminar
+                                    </button>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                     @endforeach
