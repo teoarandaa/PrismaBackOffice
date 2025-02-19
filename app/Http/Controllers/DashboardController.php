@@ -375,9 +375,10 @@ class DashboardController extends Controller
     {
         // Consulta base para proyectos
         $queryProyectos = Proyecto::with('cliente')
-            ->selectRaw('*, DATEDIFF(fecha_finalizacion, fecha_inicio) as dias_desarrollo')
+            ->selectRaw('*, DATEDIFF(updated_at, fecha_inicio) as dias_desarrollo')
             ->whereNotNull('fecha_inicio')
-            ->whereNotNull('fecha_finalizacion');
+            ->whereNotNull('updated_at')
+            ->where('estado', 'Completado');
 
         // Obtener el orden
         $ordenTiempo = $request->input('orden', 'desc');
@@ -415,35 +416,36 @@ class DashboardController extends Controller
 
         // Preparar datos para la vista
         $proyectos = [
-            'promedio_general' => DB::table('proyectos')
-                ->whereNotNull('fecha_finalizacion')
-                ->whereNotNull('fecha_inicio')
-                ->selectRaw('AVG(DATEDIFF(fecha_finalizacion, fecha_inicio)) as tiempo_medio')
-                ->first()->tiempo_medio,
+            'promedio_general' => Proyecto::whereNotNull('fecha_inicio')
+                ->whereNotNull('updated_at')
+                ->where('estado', 'Completado')
+                ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as tiempo_medio')
+                ->value('tiempo_medio'),
             'por_tipo' => DB::table('proyectos')
                 ->select(
                     'tipo',
-                    DB::raw('AVG(DATEDIFF(fecha_finalizacion, fecha_inicio)) as promedio_dias'),
+                    DB::raw('AVG(DATEDIFF(updated_at, fecha_inicio)) as promedio_dias'),
                     DB::raw('COUNT(*) as total_proyectos')
                 )
-                ->whereNotNull('fecha_finalizacion')
                 ->whereNotNull('fecha_inicio')
+                ->whereNotNull('updated_at')
+                ->where('estado', 'Completado')
                 ->groupBy('tipo')
                 ->get(),
             'por_mes' => DB::table('proyectos')
                 ->select(
                     DB::raw('MONTH(fecha_inicio) as mes'),
                     DB::raw('YEAR(fecha_inicio) as año'),
-                    DB::raw('AVG(DATEDIFF(fecha_finalizacion, fecha_inicio)) as promedio_dias')
+                    DB::raw('AVG(DATEDIFF(updated_at, fecha_inicio)) as promedio_dias')
                 )
-                ->whereNotNull('fecha_finalizacion')
                 ->whereNotNull('fecha_inicio')
+                ->whereNotNull('updated_at')
                 ->groupBy('mes', 'año')
                 ->orderBy('año', 'desc')
                 ->orderBy('mes', 'desc')
                 ->paginate(12),
             'proyectos' => $queryProyectos
-                ->orderByRaw('DATEDIFF(fecha_finalizacion, fecha_inicio) ' . $ordenTiempo)
+                ->orderByRaw('DATEDIFF(updated_at, fecha_inicio) ' . $ordenTiempo)
                 ->paginate(10)
         ];
 
