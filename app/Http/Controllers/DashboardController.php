@@ -452,16 +452,41 @@ class DashboardController extends Controller
         return view('dashboard.tiempo-desarrollo-detalle', compact('proyectos', 'ordenTiempo'));
     }
 
-    public function tasaExitoDetalle()
+    public function tasaExitoDetalle(Request $request)
     {
+        // Consulta base para proyectos
+        $queryProyectos = Proyecto::with('cliente');
+
+        // Aplicar filtros si existen
+        if ($request->filled('proyecto')) {
+            $queryProyectos->where('nombre_proyecto', 'LIKE', '%' . $request->proyecto . '%');
+        }
+
+        if ($request->filled('cliente')) {
+            $queryProyectos->whereHas('cliente', function($q) use ($request) {
+                $q->where(DB::raw("CONCAT(nombre, ' ', apellido)"), 'LIKE', '%' . $request->cliente . '%');
+            });
+        }
+
+        if ($request->filled('tipo')) {
+            $queryProyectos->where('tipo', $request->tipo);
+        }
+
+        if ($request->filled('estado')) {
+            $queryProyectos->where('estado', $request->estado);
+        }
+
+        if ($request->filled('fecha_fin')) {
+            $queryProyectos->whereDate('updated_at', $request->fecha_fin);
+        }
+
+        // Preparar estadísticas
         $estadisticas = [
             'general' => [
                 'total' => Proyecto::count(),
                 'completados' => Proyecto::where('estado', 'Completado')->count(),
-                'cancelados' => Proyecto::where('estado', 'Cancelado')->count(),
-                'en_progreso' => Proyecto::where('estado', 'En progreso')->count(),
+                'tasa_exito' => round((Proyecto::where('estado', 'Completado')->count() / Proyecto::count()) * 100, 1)
             ],
-            
             'por_tipo' => [
                 'app' => [
                     'total' => Proyecto::where('tipo', 'app')->count(),
@@ -472,28 +497,14 @@ class DashboardController extends Controller
                     'completados' => Proyecto::where('tipo', 'web')->where('estado', 'Completado')->count(),
                 ]
             ],
-
-            'proyectos' => Proyecto::with('cliente')
-                ->select('*')
-                ->selectRaw('CASE 
-                    WHEN estado = "Completado" THEN 1
-                    WHEN estado = "Cancelado" THEN 0
-                    ELSE NULL
-                    END as exitoso')
-                ->whereIn('estado', ['Completado', 'Cancelado'])
-                ->orderBy('updated_at', 'desc')
-                ->paginate(10)
+            'proyectos' => $queryProyectos->orderBy('updated_at', 'desc')->paginate(10)
         ];
 
-        // Calcular tasas
-        $estadisticas['general']['tasa_exito'] = $estadisticas['general']['total'] > 0 
-            ? round(($estadisticas['general']['completados'] / $estadisticas['general']['total']) * 100, 1) 
-            : 0;
-
+        // Calcular tasas de éxito por tipo
         $estadisticas['por_tipo']['app']['tasa_exito'] = $estadisticas['por_tipo']['app']['total'] > 0 
             ? round(($estadisticas['por_tipo']['app']['completados'] / $estadisticas['por_tipo']['app']['total']) * 100, 1) 
             : 0;
-
+        
         $estadisticas['por_tipo']['web']['tasa_exito'] = $estadisticas['por_tipo']['web']['total'] > 0 
             ? round(($estadisticas['por_tipo']['web']['completados'] / $estadisticas['por_tipo']['web']['total']) * 100, 1) 
             : 0;
