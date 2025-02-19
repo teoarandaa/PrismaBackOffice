@@ -42,7 +42,8 @@
                     <p class="text-sm text-green-600">Total histórico</p>
                 </div>
                 
-                <div class="bg-purple-50 p-6 rounded-lg">
+                <div class="bg-purple-50 p-6 rounded-lg cursor-pointer hover:bg-purple-100 transition-colors"
+                     onclick="window.location.href='{{ route('dashboard.tiempo-desarrollo') }}'">
                     <h3 class="text-purple-800 text-lg font-semibold mb-2">Tiempo Medio Desarrollo</h3>
                     <p class="text-3xl font-bold text-purple-600">{{ (int)$tiempoMedioDesarrollo }} días</p>
                     <p class="text-sm text-purple-600">Promedio general</p>

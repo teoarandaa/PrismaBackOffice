@@ -252,9 +252,11 @@ class DashboardController extends Controller
 
     public function ingresosDetalle(Request $request)
     {
-        $ordenIngresos = $request->get('orden', 'desc'); // Por defecto ordenamos de mayor a menor
+        $ordenIngresos = $request->get('orden', 'desc');
 
         $ingresos = [
+            'total_general' => Proyecto::sum('presupuesto'),
+            
             'por_tipo' => Proyecto::select('tipo', DB::raw('SUM(presupuesto) as total'))
                 ->groupBy('tipo')
                 ->get(),
@@ -275,5 +277,36 @@ class DashboardController extends Controller
         ];
 
         return view('dashboard.ingresos-detalle', compact('ingresos', 'ordenIngresos'));
+    }
+
+    public function tiempoDesarrolloDetalle(Request $request)
+    {
+        $ordenTiempo = $request->get('orden', 'desc'); // Por defecto ordenamos de mayor a menor
+
+        $tiempos = [
+            'por_tipo' => Proyecto::select(
+                'tipo',
+                DB::raw('AVG(DATEDIFF(updated_at, fecha_inicio)) as tiempo_medio'),
+                DB::raw('COUNT(*) as total_proyectos')
+            )
+            ->where('estado', 'Completado')
+            ->groupBy('tipo')
+            ->get(),
+
+            'proyectos' => Proyecto::with('cliente')
+                ->where('estado', 'Completado')
+                ->select(
+                    '*',
+                    DB::raw('DATEDIFF(updated_at, fecha_inicio) as dias_desarrollo')
+                )
+                ->orderBy('dias_desarrollo', $ordenTiempo)
+                ->paginate(10),
+
+            'promedio_general' => Proyecto::where('estado', 'Completado')
+                ->select(DB::raw('AVG(DATEDIFF(updated_at, fecha_inicio)) as tiempo_medio'))
+                ->first()
+        ];
+
+        return view('dashboard.tiempo-desarrollo-detalle', compact('tiempos', 'ordenTiempo'));
     }
 } 

@@ -23,6 +23,13 @@
                 </button>
             </div>
 
+            <!-- Ingresos Totales General -->
+            <div class="mb-8 bg-green-50 p-6 rounded-lg">
+                <h2 class="text-2xl font-bold text-green-800 mb-2">Ingresos Totales</h2>
+                <p class="text-4xl font-bold text-green-600">{{ number_format($ingresos['total_general'], 2, ',', '.') }}€</p>
+                <p class="text-sm text-green-600">Total histórico de todos los proyectos</p>
+            </div>
+
             <!-- Ingresos por Tipo -->
             <div class="mb-8">
                 <h2 class="text-2xl font-bold text-green-600 mb-4">Ingresos por Tipo de Proyecto</h2>
