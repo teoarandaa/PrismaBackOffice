@@ -104,6 +104,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                     </a>
+                    @if(auth()->user()->can_edit || auth()->user()->is_admin)
                     <a href="{{ route('dashboard.kpis') }}" 
                        class="h-[42px] bg-blue-500 hover:bg-blue-700 text-white font-bold px-4 rounded-lg flex items-center justify-center"
                        title="Dashboard KPIs">
@@ -111,6 +112,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5M8 8v8m-4-5v5m16-5v5M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                         </svg>
                     </a>
+                    @endif
+                    @if(auth()->user()->is_admin)
                     <a href="{{ route('exportar') }}" 
                        class="h-[42px] bg-emerald-500 hover:bg-emerald-700 text-white font-bold px-4 rounded-lg flex items-center justify-center"
                        title="Exportar CSV">
@@ -118,6 +121,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                     </a>
+                    @endif
                     @if(auth()->user()->can_edit || auth()->user()->is_admin)
                         <button onclick="document.getElementById('importForm').classList.toggle('hidden')"
                                 class="h-[42px] bg-purple-500 hover:bg-purple-700 text-white font-bold px-4 rounded-lg flex items-center justify-center"

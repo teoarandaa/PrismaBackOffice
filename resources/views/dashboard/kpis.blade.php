@@ -40,7 +40,7 @@
                 
                 <div class="bg-purple-50 p-6 rounded-lg">
                     <h3 class="text-purple-800 text-lg font-semibold mb-2">Tiempo Medio Desarrollo</h3>
-                    <p class="text-3xl font-bold text-purple-600">{{ $tiempoMedioDesarrollo }} días</p>
+                    <p class="text-3xl font-bold text-purple-600">{{ (int)$tiempoMedioDesarrollo }} días</p>
                     <p class="text-sm text-purple-600">Últimos 6 meses</p>
                 </div>
                 

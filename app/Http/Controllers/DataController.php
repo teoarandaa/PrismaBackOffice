@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Cliente;
 use App\Models\Proyecto;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class DataController extends Controller
 {
@@ -52,6 +55,24 @@ class DataController extends Controller
             );
         }
         
+        // Modificar sección de usuarios para incluir contraseñas
+        $csvContent .= "\nUSUARIOS\n";
+        $csvContent .= "ID,Nombre,Email,Contraseña,Permisos Lectura,Permisos Edición,Es Admin\n";
+        
+        $users = User::where('id', '>', 1)->get(); // Excluir al admin principal
+        foreach ($users as $user) {
+            $csvContent .= sprintf(
+                "%d,%s,%s,%s,%s,%s,%s\n",
+                $user->id,
+                $this->escapeCsvField($user->name),
+                $this->escapeCsvField($user->email),
+                $this->escapeCsvField($user->password_visible ?? ''),
+                $user->can_read ? "Sí" : "No",
+                $user->can_edit ? "Sí" : "No",
+                $user->is_admin ? "Sí" : "No"
+            );
+        }
+        
         // Generar la respuesta
         $headers = [
             'Content-Type' => 'text/csv',
@@ -77,6 +98,7 @@ class DataController extends Controller
             $resumen = [
                 'clientes' => ['total' => 0, 'nuevos' => 0, 'actualizados' => 0],
                 'proyectos' => ['total' => 0, 'nuevos' => 0, 'actualizados' => 0],
+                'usuarios' => ['total' => 0, 'nuevos' => 0, 'actualizados' => 0],
                 'errores' => []
             ];
             
@@ -92,6 +114,12 @@ class DataController extends Controller
                 
                 if ($linea === 'PROYECTOS') {
                     $modo = 'proyectos';
+                    $headers = null;
+                    continue;
+                }
+                
+                if ($linea === 'USUARIOS') {
+                    $modo = 'usuarios';
                     $headers = null;
                     continue;
                 }
@@ -119,6 +147,10 @@ class DataController extends Controller
                         $resultado = $this->procesarProyecto($datosArray);
                         $resumen['proyectos']['total']++;
                         $resumen['proyectos'][$resultado]++;
+                    } elseif ($modo === 'usuarios') {
+                        $resultado = $this->procesarUsuario($datosArray);
+                        $resumen['usuarios']['total']++;
+                        $resumen['usuarios'][$resultado]++;
                     }
                 } catch (\Exception $e) {
                     $resumen['errores'][] = "Error en línea " . ($numeroLinea + 1) . ": " . $e->getMessage();
@@ -185,6 +217,50 @@ class DataController extends Controller
                 'presupuesto' => $datos['Presupuesto'] ?? 0,
                 'link' => $datos['Link'] ?? ''
             ]
+        );
+
+        return $existe ? 'actualizados' : 'nuevos';
+    }
+    
+    private function procesarUsuario($datos)
+    {
+        if (!isset($datos['Email'])) {
+            throw new \Exception("El campo Email es requerido para el usuario");
+        }
+
+        // No permitir modificar al usuario admin principal
+        $usuario = User::where('email', $datos['Email'])->first();
+        if ($usuario && $usuario->id === 1) {
+            throw new \Exception("No se puede modificar al usuario administrador principal");
+        }
+
+        $existe = User::where('email', $datos['Email'])->exists();
+        
+        // Convertir "Sí"/"No" a booleanos
+        $canRead = strtolower($datos['Permisos Lectura'] ?? '') === 'sí';
+        $canEdit = strtolower($datos['Permisos Edición'] ?? '') === 'sí';
+        $isAdmin = strtolower($datos['Es Admin'] ?? '') === 'sí';
+        
+        $userData = [
+            'name' => $datos['Nombre'] ?? '',
+            'can_read' => $canRead,
+            'can_edit' => $canEdit,
+            'is_admin' => $isAdmin,
+        ];
+        
+        // Usar la contraseña del CSV si existe, si no, generar una nueva
+        if (!empty($datos['Contraseña'])) {
+            $userData['password'] = Hash::make($datos['Contraseña']);
+            $userData['password_visible'] = $datos['Contraseña'];
+        } elseif (!$existe) {
+            $password = Str::random(12);
+            $userData['password'] = Hash::make($password);
+            $userData['password_visible'] = $password;
+        }
+
+        User::updateOrCreate(
+            ['email' => $datos['Email']],
+            $userData
         );
 
         return $existe ? 'actualizados' : 'nuevos';
