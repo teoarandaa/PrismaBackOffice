@@ -320,31 +320,55 @@ class DashboardController extends Controller
 
     public function ingresosDetalle(Request $request)
     {
-        $ordenIngresos = $request->get('orden', 'desc');
+        // Consulta base para proyectos
+        $queryProyectos = Proyecto::with('cliente');
 
-        $ingresos = [
+        // Obtener el orden de los ingresos
+        $ordenIngresos = $request->input('orden', 'desc');
+
+        // Aplicar filtros si existen
+        if ($request->filled('proyecto')) {
+            $queryProyectos->where('nombre_proyecto', 'LIKE', '%' . $request->proyecto . '%');
+        }
+        if ($request->filled('cliente')) {
+            $queryProyectos->whereHas('cliente', function($q) use ($request) {
+                $q->where(DB::raw("CONCAT(nombre, ' ', apellido)"), 'LIKE', '%' . $request->cliente . '%');
+            });
+        }
+        if ($request->filled('tipo')) {
+            $queryProyectos->where('tipo', $request->tipo);
+        }
+        if ($request->filled('estado')) {
+            $queryProyectos->where('estado', $request->estado);
+        }
+        if ($request->filled('ingresos_min')) {
+            $queryProyectos->where('presupuesto', '>=', $request->ingresos_min);
+        }
+        if ($request->filled('ingresos_max')) {
+            $queryProyectos->where('presupuesto', '<=', $request->ingresos_max);
+        }
+
+        // Preparar datos para la vista
+        $proyectos = [
             'total_general' => Proyecto::sum('presupuesto'),
-            
-            'por_tipo' => Proyecto::select('tipo', DB::raw('SUM(presupuesto) as total'))
+            'por_tipo' => DB::table('proyectos')
+                ->select('tipo', DB::raw('SUM(presupuesto) as total'))
                 ->groupBy('tipo')
                 ->get(),
-            
-            'por_mes' => Proyecto::select(
-                    DB::raw('YEAR(created_at) as año'),
+            'por_mes' => DB::table('proyectos')
+                ->select(
                     DB::raw('MONTH(created_at) as mes'),
+                    DB::raw('YEAR(created_at) as año'),
                     DB::raw('SUM(presupuesto) as total')
                 )
-                ->groupBy('año', 'mes')
+                ->groupBy('mes', 'año')
                 ->orderBy('año', 'desc')
                 ->orderBy('mes', 'desc')
-                ->paginate(12, ['*'], 'por_mes'),
-
-            'proyectos' => Proyecto::with('cliente')
-                ->orderBy('presupuesto', $ordenIngresos)
-                ->paginate(10, ['*'], 'proyectos')
+                ->paginate(12),
+            'proyectos' => $queryProyectos->orderBy('presupuesto', $ordenIngresos)->paginate(10)
         ];
 
-        return view('dashboard.ingresos-detalle', compact('ingresos', 'ordenIngresos'));
+        return view('dashboard.ingresos-detalle', compact('proyectos', 'ordenIngresos'));
     }
 
     public function tiempoDesarrolloDetalle(Request $request)
