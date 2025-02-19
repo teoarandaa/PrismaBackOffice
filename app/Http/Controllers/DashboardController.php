@@ -374,7 +374,10 @@ class DashboardController extends Controller
     public function tiempoDesarrolloDetalle(Request $request)
     {
         // Consulta base para proyectos
-        $queryProyectos = Proyecto::with('cliente');
+        $queryProyectos = Proyecto::with('cliente')
+            ->selectRaw('*, DATEDIFF(fecha_finalizacion, fecha_inicio) as dias_desarrollo')
+            ->whereNotNull('fecha_inicio')
+            ->whereNotNull('fecha_finalizacion');
 
         // Obtener el orden
         $ordenTiempo = $request->input('orden', 'desc');
