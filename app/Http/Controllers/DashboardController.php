@@ -16,12 +16,10 @@ class DashboardController extends Controller
         $ingresosTotales = Proyecto::whereYear('created_at', Carbon::now()->year)
                                   ->sum('presupuesto');
         
-        // Tiempo medio de desarrollo (en días)
+        // Tiempo medio de desarrollo (usando updated_at como en rendimiento)
         $tiempoMedioDesarrollo = Proyecto::whereNotNull('fecha_inicio')
-            ->whereNotNull('fecha_finalizacion')
             ->where('estado', 'Completado')
-            ->whereDate('fecha_finalizacion', '>=', Carbon::now()->subMonths(6))
-            ->avg(DB::raw('DATEDIFF(fecha_finalizacion, fecha_inicio)'));
+            ->avg(DB::raw('DATEDIFF(updated_at, fecha_inicio)'));
 
         // Tasa de éxito (proyectos completados vs total)
         $totalProyectos = Proyecto::count();

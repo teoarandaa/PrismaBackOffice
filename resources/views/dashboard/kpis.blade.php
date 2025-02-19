@@ -35,13 +35,13 @@
                 <div class="bg-green-50 p-6 rounded-lg">
                     <h3 class="text-green-800 text-lg font-semibold mb-2">Ingresos Totales</h3>
                     <p class="text-3xl font-bold text-green-600">{{ number_format($ingresosTotales, 2, ',', '.') }}€</p>
-                    <p class="text-sm text-green-600">Año actual</p>
+                    <p class="text-sm text-green-600">Total histórico</p>
                 </div>
                 
                 <div class="bg-purple-50 p-6 rounded-lg">
                     <h3 class="text-purple-800 text-lg font-semibold mb-2">Tiempo Medio Desarrollo</h3>
                     <p class="text-3xl font-bold text-purple-600">{{ (int)$tiempoMedioDesarrollo }} días</p>
-                    <p class="text-sm text-purple-600">Últimos 6 meses</p>
+                    <p class="text-sm text-purple-600">Promedio general</p>
                 </div>
                 
                 <div class="bg-yellow-50 p-6 rounded-lg">
