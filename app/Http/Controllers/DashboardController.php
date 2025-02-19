@@ -61,6 +61,45 @@ class DashboardController extends Controller
         $proyectosIniciados = Proyecto::count();
         $proyectosCompletados = Proyecto::where('estado', 'Completado')->count();
 
+        // Datos para las tendencias (últimos 6 meses)
+        $tendencias = [
+            'meses' => [],
+            'ingresos' => [],
+            'tiempos' => [],
+            'tasas_exito' => []
+        ];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $fecha = now()->subMonths($i);
+            $mes = $fecha->format('M Y');
+            $inicio = $fecha->startOfMonth();
+            $fin = $fecha->copy()->endOfMonth();
+
+            // Ingresos mensuales
+            $ingresos = Proyecto::whereBetween('created_at', [$inicio, $fin])
+                ->sum('presupuesto');
+
+            // Tiempo medio de desarrollo
+            $tiempoMedio = Proyecto::whereBetween('created_at', [$inicio, $fin])
+                ->whereNotNull('fecha_inicio')
+                ->whereNotNull('updated_at')
+                ->where('estado', 'Completado')
+                ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as tiempo_medio')
+                ->value('tiempo_medio') ?? 0;
+
+            // Tasa de éxito
+            $total = Proyecto::whereBetween('created_at', [$inicio, $fin])->count();
+            $completados = Proyecto::whereBetween('created_at', [$inicio, $fin])
+                ->where('estado', 'Completado')
+                ->count();
+            $tasaExito = $total > 0 ? round(($completados / $total) * 100, 1) : 0;
+
+            $tendencias['meses'][] = $mes;
+            $tendencias['ingresos'][] = $ingresos;
+            $tendencias['tiempos'][] = round($tiempoMedio, 1);
+            $tendencias['tasas_exito'][] = $tasaExito;
+        }
+
         return view('dashboard.kpis', compact(
             'proyectosActivos',
             'ingresosTotales',
@@ -75,7 +114,8 @@ class DashboardController extends Controller
             'proyectosIniciadosMes',
             'proyectosCompletadosMes',
             'proyectosIniciados',
-            'proyectosCompletados'
+            'proyectosCompletados',
+            'tendencias'
         ));
     }
 
