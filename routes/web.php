@@ -82,4 +82,7 @@ Route::middleware('auth')->group(function () {
         ->middleware(['auth']);
 
     Route::get('/dashboard/kpis', [DashboardController::class, 'kpis'])->name('dashboard.kpis');
+    Route::get('/dashboard/top-clientes', [DashboardController::class, 'topClientesDetalle'])->name('dashboard.top-clientes');
+    Route::get('/dashboard/presupuestos', [DashboardController::class, 'presupuestosDetalle'])->name('dashboard.presupuestos');
+    Route::get('/dashboard/rendimiento', [DashboardController::class, 'rendimientoDetalle'])->name('dashboard.rendimiento');
 });

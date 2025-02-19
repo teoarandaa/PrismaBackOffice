@@ -67,10 +67,16 @@
             <!-- Métricas Adicionales -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
                 <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="text-lg font-semibold mb-4">Top Clientes</h3>
+                    <h3 class="text-lg font-semibold mb-4 flex justify-between items-center">
+                        <span>Top Clientes</span>
+                        <a href="{{ route('dashboard.top-clientes') }}" class="text-sm text-blue-600 hover:text-blue-800">
+                            Ver detalles →
+                        </a>
+                    </h3>
                     <div class="space-y-3">
                         @foreach($topClientes as $cliente)
-                        <div class="flex justify-between items-center">
+                        <div class="flex justify-between items-center hover:bg-gray-50 p-2 rounded cursor-pointer"
+                             onclick="window.location.href='{{ route('dashboard.top-clientes') }}'">
                             <span class="text-gray-600">{{ $cliente->nombre }} {{ $cliente->apellido }}</span>
                             <span class="font-semibold">{{ $cliente->total_proyectos }} proyectos</span>
                         </div>
@@ -79,13 +85,18 @@
                 </div>
 
                 <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="text-lg font-semibold mb-4">Presupuesto Promedio</h3>
-                    <div class="space-y-2">
-                        <div class="flex justify-between">
+                    <h3 class="text-lg font-semibold mb-4 flex justify-between items-center">
+                        <span>Presupuesto Promedio</span>
+                        <a href="{{ route('dashboard.presupuestos') }}" class="text-sm text-blue-600 hover:text-blue-800">
+                            Ver detalles →
+                        </a>
+                    </h3>
+                    <div class="space-y-2 cursor-pointer" onclick="window.location.href='{{ route('dashboard.presupuestos') }}'">
+                        <div class="flex justify-between hover:bg-gray-50 p-2 rounded">
                             <span>Apps</span>
                             <span class="font-semibold">{{ number_format($presupuestoPromedioApps, 2, ',', '.') }}€</span>
                         </div>
-                        <div class="flex justify-between">
+                        <div class="flex justify-between hover:bg-gray-50 p-2 rounded">
                             <span>Webs</span>
                             <span class="font-semibold">{{ number_format($presupuestoPromedioWebs, 2, ',', '.') }}€</span>
                         </div>
@@ -93,15 +104,20 @@
                 </div>
 
                 <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="text-lg font-semibold mb-4">Rendimiento Mensual</h3>
-                    <div class="space-y-2">
-                        <div class="flex justify-between">
+                    <h3 class="text-lg font-semibold mb-4 flex justify-between items-center">
+                        <span>Rendimiento General</span>
+                        <a href="{{ route('dashboard.rendimiento') }}" class="text-sm text-blue-600 hover:text-blue-800">
+                            Ver detalles →
+                        </a>
+                    </h3>
+                    <div class="space-y-2 cursor-pointer" onclick="window.location.href='{{ route('dashboard.rendimiento') }}'">
+                        <div class="flex justify-between hover:bg-gray-50 p-2 rounded">
                             <span>Proyectos Iniciados</span>
-                            <span class="font-semibold">{{ $proyectosIniciadosMes }}</span>
+                            <span class="font-semibold">{{ $proyectosIniciados }}</span>
                         </div>
-                        <div class="flex justify-between">
+                        <div class="flex justify-between hover:bg-gray-50 p-2 rounded">
                             <span>Proyectos Completados</span>
-                            <span class="font-semibold">{{ $proyectosCompletadosMes }}</span>
+                            <span class="font-semibold">{{ $proyectosCompletados }}</span>
                         </div>
                     </div>
                 </div>
