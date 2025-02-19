@@ -268,23 +268,51 @@ class DashboardController extends Controller
         return view('dashboard.rendimiento-detalle', compact('estadisticas'));
     }
 
-    public function proyectosActivosDetalle()
+    public function proyectosActivosDetalle(Request $request)
     {
+        $query = [
+            'activos' => Proyecto::with('cliente')->where('estado', 'En progreso'),
+            'completados' => Proyecto::with('cliente')->where('estado', 'Completado'),
+            'en_progreso' => Proyecto::with('cliente')->where('estado', 'En progreso'),
+            'cancelados' => Proyecto::with('cliente')->where('estado', 'Cancelado')
+        ];
+
+        // Filtros comunes para todas las secciones
+        foreach (['completados', 'en_progreso', 'cancelados'] as $estado) {
+            if ($request->filled($estado . '_nombre')) {
+                $query[$estado]->where('nombre_proyecto', 'LIKE', '%' . $request->input($estado . '_nombre') . '%');
+            }
+            if ($request->filled($estado . '_cliente')) {
+                $query[$estado]->whereHas('cliente', function($q) use ($request, $estado) {
+                    $q->where(DB::raw("CONCAT(nombre, ' ', apellido)"), 'LIKE', '%' . $request->input($estado . '_cliente') . '%');
+                });
+            }
+            if ($request->filled($estado . '_tipo')) {
+                $query[$estado]->where('tipo', $request->input($estado . '_tipo'));
+            }
+            if ($request->filled($estado . '_inicio')) {
+                $query[$estado]->whereDate('fecha_inicio', $request->input($estado . '_inicio'));
+            }
+            if ($request->filled($estado . '_fin')) {
+                $query[$estado]->whereDate('fecha_finalizacion', $request->input($estado . '_fin'));
+            }
+        }
+
+        // Filtros específicos para completados
+        if ($request->filled('completados_completado')) {
+            $query['completados']->whereDate('updated_at', $request->input('completados_completado'));
+        }
+
+        // Filtros específicos para cancelados
+        if ($request->filled('cancelados_cancelado')) {
+            $query['cancelados']->whereDate('updated_at', $request->input('cancelados_cancelado'));
+        }
+
         $proyectos = [
-            'activos' => Proyecto::where('estado', 'En Progreso')
-                ->with('cliente')
-                ->orderBy('fecha_inicio', 'desc')
-                ->paginate(10, ['*'], 'activos'),
-
-            'completados' => Proyecto::where('estado', 'Completado')
-                ->with('cliente')
-                ->orderBy('updated_at', 'desc')
-                ->paginate(10, ['*'], 'completados'),
-
-            'cancelados' => Proyecto::where('estado', 'Cancelado')
-                ->with('cliente')
-                ->orderBy('updated_at', 'desc')
-                ->paginate(10, ['*'], 'cancelados')
+            'activos' => $query['activos']->paginate(10, ['*'], 'activos'),
+            'completados' => $query['completados']->paginate(10, ['*'], 'completados'),
+            'en_progreso' => $query['en_progreso']->paginate(10, ['*'], 'en_progreso'),
+            'cancelados' => $query['cancelados']->paginate(10, ['*'], 'cancelados')
         ];
 
         return view('dashboard.proyectos-activos-detalle', compact('proyectos'));
