@@ -16,6 +16,7 @@ class Proyecto extends Model
         'fecha_finalizacion',
         'presupuesto',
         'estado',
+        'tipo',
         'link',
         'id_cliente'
     ];

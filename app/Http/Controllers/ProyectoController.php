@@ -16,32 +16,29 @@ class ProyectoController extends Controller
 
     public function store(Request $request, Cliente $cliente)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'fecha_inicio' => 'nullable|date',
             'fecha_fin_estimada' => 'nullable|date',
-            'presupuesto' => 'nullable|numeric',
             'estado' => 'required|in:En progreso,Completado,Cancelado',
-            'link' => 'nullable|url',
             'tipo' => 'required|in:web,app',
+            'presupuesto' => 'nullable|numeric',
+            'link' => 'nullable|string'
         ]);
 
         $proyecto = $cliente->proyectos()->create([
-            'nombre_proyecto' => $request->nombre,
-            'descripcion' => $request->descripcion,
-            'fecha_inicio' => $request->fecha_inicio,
-            'fecha_finalizacion' => $request->fecha_fin_estimada,
-            'presupuesto' => $request->presupuesto,
-            'estado' => $request->estado,
-            'link' => $request->link,
-            'tipo' => $request->tipo,
+            'nombre_proyecto' => $validatedData['nombre'],
+            'descripcion' => $validatedData['descripcion'],
+            'fecha_inicio' => $validatedData['fecha_inicio'],
+            'fecha_finalizacion' => $validatedData['fecha_fin_estimada'],
+            'estado' => $validatedData['estado'],
+            'tipo' => $validatedData['tipo'],
+            'presupuesto' => $validatedData['presupuesto'],
+            'link' => $validatedData['link']
         ]);
 
-        return response()->json([
-            'message' => 'Proyecto creado exitosamente',
-            'proyecto' => $proyecto
-        ]);
+        return response()->json(['message' => 'Proyecto creado correctamente']);
     }
 
     public function show(Cliente $cliente, Proyecto $proyecto)
@@ -51,35 +48,52 @@ class ProyectoController extends Controller
 
     public function update(Request $request, Cliente $cliente, Proyecto $proyecto)
     {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'descripcion' => 'nullable|string',
-            'fecha_inicio' => 'nullable|date',
-            'fecha_fin_estimada' => 'nullable|date',
-            'estado' => 'required|in:en_progreso,completado,cancelado',
-            'presupuesto' => 'nullable|numeric',
-            'link' => 'nullable|url',
-            'tipo' => 'required|in:web,app',
-        ]);
+        // Log de los datos recibidos
+        \Log::info('Datos recibidos en update:', $request->all());
 
         try {
+            $validatedData = $request->validate([
+                'nombre' => 'required|string|max:255',
+                'descripcion' => 'nullable|string',
+                'fecha_inicio' => 'nullable|date',
+                'fecha_fin_estimada' => 'nullable|date',
+                'presupuesto' => 'nullable|numeric',
+                'estado' => ['required', 'string', 'in:En progreso,Completado,Cancelado'],
+                'tipo' => ['required', 'string', 'in:web,app'],
+                'link' => 'nullable|string'
+            ]);
+
+            \Log::info('Datos validados:', $validatedData);
+
             $proyecto->update([
-                'nombre_proyecto' => $request->nombre,
-                'descripcion' => $request->descripcion,
-                'fecha_inicio' => $request->fecha_inicio,
-                'fecha_finalizacion' => $request->fecha_fin_estimada,
-                'presupuesto' => $request->presupuesto,
-                'estado' => $request->estado === 'en_progreso' ? 'En progreso' : ucfirst($request->estado),
-                'link' => $request->link,
-                'tipo' => $request->tipo,
+                'nombre_proyecto' => $validatedData['nombre'],
+                'descripcion' => $validatedData['descripcion'],
+                'fecha_inicio' => $validatedData['fecha_inicio'],
+                'fecha_finalizacion' => $validatedData['fecha_fin_estimada'],
+                'presupuesto' => $validatedData['presupuesto'],
+                'estado' => $validatedData['estado'],
+                'tipo' => $validatedData['tipo'],
+                'link' => $validatedData['link']
             ]);
 
             return response()->json([
-                'message' => 'Proyecto actualizado exitosamente',
-                'data' => $proyecto
+                'message' => 'Proyecto actualizado correctamente',
+                'proyecto' => $proyecto
             ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Error de validación:', [
+                'errors' => $e->errors(),
+                'request' => $request->all()
+            ]);
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
-            \Log::error('Error al actualizar proyecto: ' . $e->getMessage());
+            \Log::error('Error al actualizar proyecto:', [
+                'message' => $e->getMessage(),
+                'request' => $request->all()
+            ]);
             return response()->json([
                 'message' => 'Error al actualizar el proyecto',
                 'error' => $e->getMessage()
@@ -87,18 +101,14 @@ class ProyectoController extends Controller
         }
     }
 
-    public function destroy(Proyecto $proyecto)
+    public function destroy(Cliente $cliente, Proyecto $proyecto)
     {
         try {
-            \Log::info('Intentando eliminar proyecto: ' . $proyecto->id);
-            
-            if (!$proyecto) {
-                \Log::error('Proyecto no encontrado');
-                return response()->json(['message' => 'Proyecto no encontrado'], 404);
+            if ($proyecto->id_cliente !== $cliente->id) {
+                return response()->json(['message' => 'El proyecto no pertenece a este cliente'], 403);
             }
 
             $proyecto->delete();
-            \Log::info('Proyecto eliminado correctamente');
             
             return response()->json([
                 'message' => 'Proyecto eliminado correctamente',

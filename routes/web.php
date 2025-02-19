@@ -6,6 +6,7 @@ use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\DataController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\DashboardController;
 
 // Rutas de autenticación
 Route::middleware('guest')->group(function () {
@@ -79,4 +80,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/proyectos/{proyecto}', [ProyectoController::class, 'destroy'])
         ->name('proyectos.destroy')
         ->middleware(['auth']);
+
+    Route::get('/dashboard/kpis', [DashboardController::class, 'kpis'])->name('dashboard.kpis');
 });

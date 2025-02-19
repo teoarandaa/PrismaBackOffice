@@ -53,12 +53,12 @@
                     </div>
 
                     <div>
-                        <label for="estado" class="block text-sm font-medium text-gray-700">Estado</label>
+                        <label for="estado" class="block text-sm font-medium text-gray-700">Estado del Proyecto</label>
                         <select id="estado" name="estado"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="en_progreso" {{ $proyecto->estado === 'En progreso' ? 'selected' : '' }}>En Progreso</option>
-                            <option value="completado" {{ $proyecto->estado === 'Completado' ? 'selected' : '' }}>Completado</option>
-                            <option value="cancelado" {{ $proyecto->estado === 'Cancelado' ? 'selected' : '' }}>Cancelado</option>
+                            <option value="En progreso" {{ $proyecto->estado === 'En progreso' ? 'selected' : '' }}>En progreso</option>
+                            <option value="Completado" {{ $proyecto->estado === 'Completado' ? 'selected' : '' }}>Completado</option>
+                            <option value="Cancelado" {{ $proyecto->estado === 'Cancelado' ? 'selected' : '' }}>Cancelado</option>
                         </select>
                     </div>
 
@@ -100,8 +100,11 @@
                 presupuesto: document.getElementById('presupuesto').value,
                 estado: document.getElementById('estado').value,
                 tipo: document.getElementById('tipo').value,
-                link: document.getElementById('link').value
+                link: document.getElementById('link').value,
+                _token: '{{ csrf_token() }}'
             };
+
+            console.log('Datos a enviar:', formData);
 
             fetch('{{ route("clientes.proyectos.update", [$cliente, $proyecto]) }}', {
                 method: 'PUT',
@@ -114,16 +117,20 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    return response.json().then(err => Promise.reject(err));
+                    return response.json().then(err => {
+                        console.log('Error response:', err);
+                        return Promise.reject(err);
+                    });
                 }
                 return response.json();
             })
             .then(data => {
+                console.log('Respuesta exitosa:', data);
                 alert(data.message);
                 window.location.href = '{{ route("clientes.proyectos.index", $cliente) }}';
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Error detallado:', error);
                 alert(error.message || 'Error al actualizar el proyecto');
             });
         });
