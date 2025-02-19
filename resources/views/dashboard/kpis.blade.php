@@ -26,8 +26,11 @@
 
             <!-- KPIs Principales -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <div class="bg-blue-50 p-6 rounded-lg">
-                    <h3 class="text-blue-800 text-lg font-semibold mb-2">Proyectos Activos</h3>
+                <div class="bg-blue-50 p-6 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
+                     onclick="window.location.href='{{ route('dashboard.proyectos-activos') }}'">
+                    <h3 class="text-blue-800 text-lg font-semibold mb-2">
+                        <span>Proyectos Activos</span>
+                    </h3>
                     <p class="text-3xl font-bold text-blue-600">{{ $proyectosActivos }}</p>
                     <p class="text-sm text-blue-600">En desarrollo</p>
                 </div>

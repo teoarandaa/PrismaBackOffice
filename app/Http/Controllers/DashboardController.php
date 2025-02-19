@@ -226,4 +226,26 @@ class DashboardController extends Controller
 
         return view('dashboard.rendimiento-detalle', compact('estadisticas'));
     }
+
+    public function proyectosActivosDetalle()
+    {
+        $proyectos = [
+            'activos' => Proyecto::where('estado', 'En Progreso')
+                ->with('cliente')
+                ->orderBy('fecha_inicio', 'desc')
+                ->paginate(10, ['*'], 'activos'),
+
+            'completados' => Proyecto::where('estado', 'Completado')
+                ->with('cliente')
+                ->orderBy('updated_at', 'desc')
+                ->paginate(10, ['*'], 'completados'),
+
+            'pendientes' => Proyecto::where('estado', 'Pendiente')
+                ->with('cliente')
+                ->orderBy('fecha_inicio', 'asc')
+                ->paginate(10, ['*'], 'pendientes')
+        ];
+
+        return view('dashboard.proyectos-activos-detalle', compact('proyectos'));
+    }
 } 
