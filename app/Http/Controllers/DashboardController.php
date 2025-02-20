@@ -270,46 +270,79 @@ class DashboardController extends Controller
 
     public function proyectosActivosDetalle(Request $request)
     {
+        // Consultas base para cada tipo de proyecto
         $query = [
-            'activos' => Proyecto::with('cliente')->where('estado', 'En progreso'),
             'completados' => Proyecto::with('cliente')->where('estado', 'Completado'),
-            'en_progreso' => Proyecto::with('cliente')->where('estado', 'En progreso'),
+            'en_progreso' => Proyecto::with('cliente')->where('estado', 'En Desarrollo'),
             'cancelados' => Proyecto::with('cliente')->where('estado', 'Cancelado')
         ];
 
-        // Filtros comunes para todas las secciones
-        foreach (['completados', 'en_progreso', 'cancelados'] as $estado) {
-            if ($request->filled($estado . '_nombre')) {
-                $query[$estado]->where('nombre_proyecto', 'LIKE', '%' . $request->input($estado . '_nombre') . '%');
+        // Aplicar filtros para cada tipo
+        foreach ($query as $tipo => $queryBuilder) {
+            // Filtro por nombre de proyecto
+            if ($request->filled($tipo . '_nombre')) {
+                $queryBuilder->where('nombre_proyecto', 'LIKE', '%' . $request->input($tipo . '_nombre') . '%');
             }
-            if ($request->filled($estado . '_cliente')) {
-                $query[$estado]->whereHas('cliente', function($q) use ($request, $estado) {
-                    $q->where(DB::raw("CONCAT(nombre, ' ', apellido)"), 'LIKE', '%' . $request->input($estado . '_cliente') . '%');
+
+            // Filtro por cliente
+            if ($request->filled($tipo . '_cliente')) {
+                $queryBuilder->whereHas('cliente', function($q) use ($request, $tipo) {
+                    $q->where(DB::raw("CONCAT(nombre, ' ', apellido)"), 'LIKE', '%' . $request->input($tipo . '_cliente') . '%');
                 });
             }
-            if ($request->filled($estado . '_tipo')) {
-                $query[$estado]->where('tipo', $request->input($estado . '_tipo'));
+
+            // Filtro por tipo de proyecto
+            if ($request->filled($tipo . '_tipo')) {
+                $queryBuilder->where('tipo', $request->input($tipo . '_tipo'));
             }
-            if ($request->filled($estado . '_inicio')) {
-                $query[$estado]->whereDate('fecha_inicio', $request->input($estado . '_inicio'));
+
+            // Filtro por rango de fechas
+            if ($request->filled($tipo . '_inicio') || $request->filled($tipo . '_fin')) {
+                $queryBuilder->where(function($q) use ($request, $tipo) {
+                    $fechaInicio = $request->input($tipo . '_inicio');
+                    $fechaFin = $request->input($tipo . '_fin');
+
+                    if ($fechaInicio && $fechaFin) {
+                        // Buscar proyectos que se solapen con el rango de fechas (inclusive)
+                        $q->where(function($query) use ($fechaInicio, $fechaFin) {
+                            $query->where(function($q) use ($fechaInicio, $fechaFin) {
+                                // El proyecto empieza dentro o en el límite del rango
+                                $q->whereDate('fecha_inicio', '>=', $fechaInicio)
+                                  ->whereDate('fecha_inicio', '<=', $fechaFin);
+                            })->orWhere(function($q) use ($fechaInicio, $fechaFin) {
+                                // El proyecto termina dentro o en el límite del rango
+                                $q->whereDate('fecha_finalizacion', '>=', $fechaInicio)
+                                  ->whereDate('fecha_finalizacion', '<=', $fechaFin);
+                            })->orWhere(function($q) use ($fechaInicio, $fechaFin) {
+                                // El proyecto abarca todo el rango
+                                $q->whereDate('fecha_inicio', '<=', $fechaInicio)
+                                  ->whereDate('fecha_finalizacion', '>=', $fechaFin);
+                            });
+                        });
+                    } elseif ($fechaInicio) {
+                        $q->whereDate('fecha_finalizacion', '>=', $fechaInicio);
+                    } elseif ($fechaFin) {
+                        $q->whereDate('fecha_inicio', '<=', $fechaFin);
+                    }
+                });
             }
-            if ($request->filled($estado . '_fin')) {
-                $query[$estado]->whereDate('fecha_finalizacion', $request->input($estado . '_fin'));
+
+            // Filtro adicional para fecha de completado/cancelado
+            if ($tipo === 'completados' && $request->filled('completados_completado')) {
+                $queryBuilder->where(function($q) use ($request) {
+                    if ($request->filled('completados_inicio')) {
+                        // Incluir las fechas límite en el rango
+                        $q->whereDate('updated_at', '>=', $request->completados_inicio)
+                          ->whereDate('updated_at', '<=', $request->completados_completado);
+                    } else {
+                        $q->whereDate('updated_at', '<=', $request->completados_completado);
+                    }
+                });
             }
         }
 
-        // Filtros específicos para completados
-        if ($request->filled('completados_completado')) {
-            $query['completados']->whereDate('updated_at', $request->input('completados_completado'));
-        }
-
-        // Filtros específicos para cancelados
-        if ($request->filled('cancelados_cancelado')) {
-            $query['cancelados']->whereDate('updated_at', $request->input('cancelados_cancelado'));
-        }
-
+        // Paginar resultados
         $proyectos = [
-            'activos' => $query['activos']->paginate(10, ['*'], 'activos'),
             'completados' => $query['completados']->paginate(10, ['*'], 'completados'),
             'en_progreso' => $query['en_progreso']->paginate(10, ['*'], 'en_progreso'),
             'cancelados' => $query['cancelados']->paginate(10, ['*'], 'cancelados')
