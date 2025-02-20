@@ -91,4 +91,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/tasa-exito', [DashboardController::class, 'tasaExitoDetalle'])->name('dashboard.tasa-exito');
     Route::get('/dashboard/tendencias', [DashboardController::class, 'obtenerTendencias'])->name('dashboard.tendencias');
     Route::get('/dashboard/estadisticas', [DashboardController::class, 'obtenerEstadisticasGraficos'])->name('dashboard.estadisticas');
+    Route::get('/dashboard/ingresos/mes/{mes}/{año}', [DashboardController::class, 'ingresosPorMes'])->name('dashboard.ingresos.mes');
+    Route::get('/dashboard/ingresos/export', [DashboardController::class, 'exportarIngresos'])->name('dashboard.ingresos.export');
 });

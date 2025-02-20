@@ -7,6 +7,8 @@ use App\Models\Cliente;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Exports\IngresosExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DashboardController extends Controller
 {
@@ -482,7 +484,15 @@ class DashboardController extends Controller
                 ->paginate(10, ['*'], 'pagina_proyectos')
         ];
 
-        return view('dashboard.ingresos-detalle', compact('proyectos', 'ordenIngresos'));
+        // Obtener años únicos de los proyectos completados
+        $años_disponibles = Proyecto::where('estado', 'Completado')
+            ->selectRaw('YEAR(updated_at) as año')
+            ->distinct()
+            ->orderBy('año', 'desc')
+            ->pluck('año')
+            ->toArray();
+
+        return view('dashboard.ingresos-detalle', compact('proyectos', 'ordenIngresos', 'años_disponibles'));
     }
 
     public function tiempoDesarrolloDetalle(Request $request)
@@ -696,5 +706,34 @@ class DashboardController extends Controller
         \Log::info("Datos enviados: " . json_encode($datos));
         
         return response()->json($datos);
+    }
+
+    public function ingresosPorMes($mes, $año)
+    {
+        $proyectos = Proyecto::with('cliente')
+            ->whereMonth('updated_at', $mes)
+            ->whereYear('updated_at', $año)
+            ->where('estado', 'Completado')
+            ->get();
+
+        $total = $proyectos->sum('presupuesto');
+
+        return view('dashboard.ingresos-mes', compact('proyectos', 'mes', 'año', 'total'));
+    }
+
+    public function exportarIngresos(Request $request)
+    {
+        $type = $request->get('type', 'general');
+        $year = $request->get('year');
+        $format = $request->get('format', 'xlsx');
+        
+        $fileName = $type === 'year' ? "ingresos_{$year}" : "ingresos_general";
+        
+        return match($format) {
+            'csv' => Excel::download(new IngresosExport($type, $year), $fileName . '.csv'),
+            'xlsx' => Excel::download(new IngresosExport($type, $year), $fileName . '.xlsx'),
+            'pdf' => Excel::download(new IngresosExport($type, $year), $fileName . '.pdf'),
+            default => Excel::download(new IngresosExport($type, $year), $fileName . '.xlsx'),
+        };
     }
 } 

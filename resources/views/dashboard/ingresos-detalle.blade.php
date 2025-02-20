@@ -55,7 +55,73 @@
 
             <!-- Ingresos Mensuales -->
             <div class="mb-8">
-                <h2 class="text-2xl font-bold text-green-600 mb-4">Ingresos Mensuales</h2>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-green-600">Ingresos Mensuales</h2>
+                    <div class="flex gap-2">
+                        <div class="relative">
+                            <button onclick="toggleExportMenu()" 
+                                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-flex items-center gap-2 transition-all duration-200 ease-in-out">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <span>Exportar</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div id="exportMenu" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                                <div class="p-4">
+                                    <h3 class="text-sm font-semibold text-gray-700 mb-3">Opciones de Exportación</h3>
+                                    
+                                    <!-- Exportar por año -->
+                                    <form action="{{ route('dashboard.ingresos.export') }}" method="GET" class="mb-4">
+                                        <div class="mb-3">
+                                            <label class="block text-sm text-gray-700 mb-2">Año:</label>
+                                            <select name="year" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                                @foreach($años_disponibles as $año)
+                                                    <option value="{{ $año }}" {{ $año == date('Y') ? 'selected' : '' }}>
+                                                        {{ $año }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="block text-sm text-gray-700 mb-2">Formato:</label>
+                                            <select name="format" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                                <option value="xlsx">Excel (.xlsx)</option>
+                                                <option value="csv">CSV (.csv)</option>
+                                                <option value="pdf">PDF (.pdf)</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" name="type" value="year" 
+                                                class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200">
+                                            Exportar por año
+                                        </button>
+                                    </form>
+
+                                    <!-- Separador -->
+                                    <div class="border-t border-gray-200 my-3"></div>
+
+                                    <!-- Exportar general -->
+                                    <form action="{{ route('dashboard.ingresos.export') }}" method="GET">
+                                        <div class="mb-3">
+                                            <label class="block text-sm text-gray-700 mb-2">Formato:</label>
+                                            <select name="format" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                                <option value="xlsx">Excel (.xlsx)</option>
+                                                <option value="csv">CSV (.csv)</option>
+                                                <option value="pdf">PDF (.pdf)</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" name="type" value="general" 
+                                                class="w-full bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200">
+                                            Exportar general
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="bg-white rounded-lg shadow overflow-hidden">
                     <table class="min-w-full">
                         <thead class="bg-green-50">
@@ -66,7 +132,8 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($proyectos['por_mes'] as $mes)
-                            <tr class="hover:bg-gray-50">
+                            <tr class="hover:bg-gray-50 cursor-pointer" 
+                                onclick="window.location.href='{{ route('dashboard.ingresos.mes', ['mes' => $mes->mes, 'año' => $mes->año]) }}'">
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $mes->mes }}/{{ $mes->año }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ number_format($mes->total, 2, ',', '.') }}€</td>
                             </tr>
@@ -232,6 +299,21 @@
             const svg = button.querySelector('svg');
             svg.style.transform = filtro.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0)';
         }
+
+        function toggleExportMenu() {
+            const menu = document.getElementById('exportMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Cerrar el menú cuando se hace clic fuera
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('exportMenu');
+            const exportButton = document.querySelector('[onclick="toggleExportMenu()"]');
+            
+            if (!menu.contains(event.target) && !exportButton.contains(event.target)) {
+                menu.classList.add('hidden');
+            }
+        });
 
         // Si hay filtros activos, mostrar la sección
         window.onload = function() {
