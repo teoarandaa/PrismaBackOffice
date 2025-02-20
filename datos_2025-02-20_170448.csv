@@ -1,0 +1,22 @@
+CLIENTES
+ID,Nombre,Apellido,Email,Teléfono,Empresa,Ciudad,Código Postal,País,Fecha Registro
+1,"test1","test1","test1@test.com","1","a","a","1","a",2025-02-19 14:49:12
+2,"test2","test2","test2@test.com","2","b","a","2","a",2025-02-19 14:50:39
+
+PROYECTOS
+ID,ID Cliente,Nombre,Descripción,Fecha Inicio,Fecha Finalización,Estado,Presupuesto,Link
+1,1,"test","test",2025-02-04,2025-02-20,"Completado",100.00,
+3,2,"b","b",2025-01-09,2025-02-05,"Completado",250.00,
+4,2,"a","a",2024-08-01,2024-10-11,"Completado",345.00,
+5,1,"test","a",2024-09-02,2024-10-11,"Completado",123.00,
+6,2,"abc","a",2024-04-02,2025-02-18,"Completado",234.00,
+9,1,"a","a",2025-02-11,2025-02-05,"Completado",456.00,
+10,1,"a","a",2025-02-03,2025-02-06,"Completado",222.00,
+11,1,"a","a",2025-02-01,2025-02-05,"Completado",321.00,
+12,2,"a","a",2025-02-02,2025-02-04,"Completado",111.00,
+15,2,"a","a",2025-02-03,2025-02-19,"Completado",221.00,
+16,2,"b","b",2025-02-01,2025-02-06,"Completado",341.00,
+
+USUARIOS
+ID,Nombre,Email,Contraseña,Permisos Lectura,Permisos Edición,Es Admin
+2,"test","test@test.com","12345678",Sí,Sí,No

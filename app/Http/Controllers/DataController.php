@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class DataController extends Controller
 {
@@ -37,12 +38,14 @@ class DataController extends Controller
         }
         
         $csvContent .= "\nPROYECTOS\n";
-        $csvContent .= "ID,ID Cliente,Nombre,Descripción,Fecha Inicio,Fecha Finalización,Estado,Presupuesto,Link\n";
+        $csvContent .= "ID,ID Cliente,Nombre,Descripción,Fecha Inicio,Fecha Finalización,Estado,Presupuesto,Link,Fecha Completado\n";
         
         $proyectos = Proyecto::all();
         foreach ($proyectos as $proyecto) {
+            $fechaCompletado = ($proyecto->estado === 'Completado') ? $proyecto->updated_at : '';
+            
             $csvContent .= sprintf(
-                "%d,%d,%s,%s,%s,%s,%s,%.2f,%s\n",
+                "%d,%d,%s,%s,%s,%s,%s,%.2f,%s,%s\n",
                 $proyecto->id,
                 $proyecto->id_cliente,
                 $this->escapeCsvField($proyecto->nombre_proyecto),
@@ -51,7 +54,8 @@ class DataController extends Controller
                 $proyecto->fecha_finalizacion,
                 $this->escapeCsvField($proyecto->estado),
                 $proyecto->presupuesto,
-                $this->escapeCsvField($proyecto->link)
+                $this->escapeCsvField($proyecto->link),
+                $fechaCompletado
             );
         }
         
@@ -96,36 +100,31 @@ class DataController extends Controller
             $modo = null;
             $headers = null;
             $resumen = [
-                'clientes' => ['total' => 0, 'nuevos' => 0, 'actualizados' => 0],
-                'proyectos' => ['total' => 0, 'nuevos' => 0, 'actualizados' => 0],
-                'usuarios' => ['total' => 0, 'nuevos' => 0, 'actualizados' => 0],
+                'clientes' => ['total' => 0, 'nuevos' => 0, 'actualizados' => 0, 'errores' => []],
+                'proyectos' => ['total' => 0, 'nuevos' => 0, 'actualizados' => 0, 'errores' => []],
+                'usuarios' => ['total' => 0, 'nuevos' => 0, 'actualizados' => 0, 'errores' => []],
                 'errores' => []
             ];
             
+            DB::beginTransaction(); // Iniciar transacción
+
             foreach ($lineas as $numeroLinea => $linea) {
                 $linea = trim($linea);
                 if (empty($linea)) continue;
                 
-                if ($linea === 'CLIENTES') {
-                    $modo = 'clientes';
-                    $headers = null;
-                    continue;
-                }
-                
-                if ($linea === 'PROYECTOS') {
-                    $modo = 'proyectos';
-                    $headers = null;
-                    continue;
-                }
-                
-                if ($linea === 'USUARIOS') {
-                    $modo = 'usuarios';
+                // Detectar la sección
+                if (in_array($linea, ['CLIENTES', 'PROYECTOS', 'USUARIOS'])) {
+                    $modo = strtolower($linea);
                     $headers = null;
                     continue;
                 }
                 
                 if (!$headers) {
                     $headers = str_getcsv($linea);
+                    // Limpiar los headers de caracteres especiales
+                    $headers = array_map(function($header) {
+                        return trim($header);
+                    }, $headers);
                     continue;
                 }
                 
@@ -139,26 +138,44 @@ class DataController extends Controller
                     
                     $datosArray = array_combine($headers, $datos);
                     
-                    if ($modo === 'clientes') {
-                        $resultado = $this->procesarCliente($datosArray);
-                        $resumen['clientes']['total']++;
-                        $resumen['clientes'][$resultado]++;
-                    } elseif ($modo === 'proyectos') {
-                        $resultado = $this->procesarProyecto($datosArray);
-                        $resumen['proyectos']['total']++;
-                        $resumen['proyectos'][$resultado]++;
-                    } elseif ($modo === 'usuarios') {
-                        $resultado = $this->procesarUsuario($datosArray);
-                        $resumen['usuarios']['total']++;
-                        $resumen['usuarios'][$resultado]++;
+                    switch ($modo) {
+                        case 'clientes':
+                            $resultado = $this->procesarCliente($datosArray);
+                            $resumen['clientes']['total']++;
+                            $resumen['clientes'][$resultado]++;
+                            break;
+                        case 'proyectos':
+                            $resultado = $this->procesarProyecto($datosArray);
+                            $resumen['proyectos']['total']++;
+                            $resumen['proyectos'][$resultado]++;
+                            break;
+                        case 'usuarios':
+                            $resultado = $this->procesarUsuario($datosArray);
+                            $resumen['usuarios']['total']++;
+                            $resumen['usuarios'][$resultado]++;
+                            break;
                     }
                 } catch (\Exception $e) {
-                    $resumen['errores'][] = "Error en línea " . ($numeroLinea + 1) . ": " . $e->getMessage();
+                    $resumen[$modo]['errores'][] = "Error en línea " . ($numeroLinea + 1) . ": " . $e->getMessage();
+                    \Log::error("Error procesando línea $numeroLinea en modo $modo: " . $e->getMessage());
                 }
             }
             
+            if (empty($resumen['errores']) && 
+                empty($resumen['clientes']['errores']) && 
+                empty($resumen['proyectos']['errores']) && 
+                empty($resumen['usuarios']['errores'])) {
+                DB::commit(); // Confirmar transacción si no hay errores
+            } else {
+                DB::rollBack(); // Revertir si hay errores
+                throw new \Exception("Se encontraron errores durante la importación");
+            }
+            
             return view('importar-resultado', ['resumen' => $resumen]);
+            
         } catch (\Exception $e) {
+            DB::rollBack(); // Asegurar rollback en caso de error
+            \Log::error("Error en importación: " . $e->getMessage());
             return view('importar-resultado', [
                 'resumen' => ['errores' => [$e->getMessage()]]
             ])->with('error', 'Error al procesar el archivo: ' . $e->getMessage());
@@ -199,17 +216,13 @@ class DataController extends Controller
             throw new \Exception("El cliente con ID {$datos['ID Cliente']} no existe");
         }
 
-        $existe = Proyecto::where([
-            'id_cliente' => $datos['ID Cliente'],
-            'nombre_proyecto' => $datos['Nombre']
-        ])->exists();
+        $existe = Proyecto::where('id', $datos['ID'])->exists();
         
-        Proyecto::updateOrCreate(
+        $proyecto = Proyecto::updateOrCreate(
+            ['id' => $datos['ID']],
             [
                 'id_cliente' => $datos['ID Cliente'],
-                'nombre_proyecto' => $datos['Nombre']
-            ],
-            [
+                'nombre_proyecto' => $datos['Nombre'],
                 'descripcion' => $datos['Descripción'] ?? '',
                 'fecha_inicio' => $datos['Fecha Inicio'] ?? null,
                 'fecha_finalizacion' => $datos['Fecha Finalización'] ?? null,
@@ -218,6 +231,12 @@ class DataController extends Controller
                 'link' => $datos['Link'] ?? ''
             ]
         );
+
+        // Si el proyecto está completado y tiene fecha de completado, actualizar updated_at
+        if ($proyecto->estado === 'Completado' && !empty($datos['Fecha Completado'])) {
+            $proyecto->updated_at = $datos['Fecha Completado'];
+            $proyecto->save();
+        }
 
         return $existe ? 'actualizados' : 'nuevos';
     }
