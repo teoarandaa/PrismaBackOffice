@@ -6,6 +6,19 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Gestión de Clientes</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Estilo para el select cuando está desplegado -->
+    <style>
+        select#perPage option {
+            font-family: 'Inter', sans-serif;
+            padding: 8px 12px;
+            background-color: white;
+            color: #374151;
+        }
+        
+        select#perPage option:hover {
+            background-color: #f3f4f6;
+        }
+    </style>
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto px-4 py-8">
@@ -173,188 +186,235 @@
             </div>
         @endif
 
-        @if($clientes->count() > 0)
-            <div id="noResultados" class="hidden col-span-full">
-                <div class="flex flex-col items-center justify-center py-12">
-                    <div class="bg-gray-100 rounded-full p-4 mb-4">
-                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
-                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-1">No se encontraron resultados</h3>
-                    <p class="text-gray-500">Prueba con otros términos de búsqueda o filtros</p>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                @foreach($clientes as $cliente)
-                <div class="bg-white rounded-lg shadow-md p-6" 
-                     data-cliente-id="{{ $cliente->id }}"
-                     data-num-proyectos="{{ $cliente->proyectos->count() }}"
-                     data-estados="{{ json_encode($cliente->proyectos->pluck('estado')->unique()->values()) }}"
-                     data-tipos="{{ json_encode($cliente->proyectos->pluck('tipo')->unique()->values()) }}"
-                     data-fecha="{{ $cliente->created_at }}">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h2 class="text-xl font-semibold">{{ $cliente->nombre }} {{ $cliente->apellido }}</h2>
-                            <p class="text-gray-600">{{ $cliente->email }}</p>
-                            <p class="text-gray-500">{{ $cliente->empresa ?: 'Sin empresa' }}</p>
-                        </div>
-                    </div>
-
-                    <div class="border-t pt-4">
-                        <div class="flex flex-col space-y-2">
-                            <a href="{{ route('clientes.show', $cliente) }}" 
-                               class="bg-blue-500 hover:bg-blue-700 text-white text-center py-2 px-4 rounded">
-                                Ver Detalles
-                            </a>
-                            <a href="{{ route('clientes.proyectos.index', $cliente) }}" 
-                               class="bg-green-500 hover:bg-green-700 text-white text-center py-2 px-4 rounded">
-                                Ver Proyectos
-                            </a>
-                            
-                            @if(auth()->user()->can_edit || auth()->user()->is_admin)
-                                <a href="{{ route('clientes.edit', $cliente) }}" 
-                                   class="bg-yellow-500 hover:bg-yellow-700 text-white text-center py-2 px-4 rounded">
-                                    Editar Cliente
-                                </a>
-                                
-                                <button onclick="eliminarCliente({{ $cliente->id }})" 
-                                        class="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded">
-                                    Eliminar Cliente
-                                </button>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-                @endforeach
-            </div>
-        @else
-            <div class="bg-white rounded-lg shadow-md p-6 text-center">
-                <div class="flex flex-col items-center justify-center space-y-4">
-                    <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+        <!-- Mensaje de no resultados -->
+        <div id="noResultados" class="hidden col-span-full">
+            <div class="flex flex-col items-center justify-center py-12">
+                <div class="bg-gray-100 rounded-full p-4 mb-4">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                    <h3 class="text-xl font-medium text-gray-900">No hay clientes registrados</h3>
-                    <p class="text-gray-500">Comienza agregando tu primer cliente haciendo clic en el botón "Nuevo Cliente".</p>
-                    <a href="{{ route('clientes.create') }}" 
-                       class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg inline-flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-1">No se encontraron resultados</h3>
+                <p class="text-gray-500">Prueba con otros términos de búsqueda o filtros</p>
+            </div>
+        </div>
+
+        <!-- Tabla de clientes -->
+        <div id="tablaClientes" class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h2 class="text-lg font-semibold text-gray-700">Lista de Clientes</h2>
+                <div class="relative">
+                    <select id="perPage" 
+                            class="appearance-none bg-white border border-gray-300 rounded-lg pl-4 pr-10 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer text-gray-700 text-sm font-medium hover:border-gray-400 transition-colors duration-200"
+                            onchange="cambiarPaginacion(this.value)">
+                        <option value="20" {{ request('per_page', 20) == 20 ? 'selected' : '' }}>20 registros por página</option>
+                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 registros por página</option>
+                        <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100 registros por página</option>
+                        <option value="200" {{ request('per_page') == 200 ? 'selected' : '' }}>200 registros por página</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
-                        Agregar Cliente
-                    </a>
+                    </div>
                 </div>
             </div>
-        @endif
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">Cliente</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">Email</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">Empresa</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/10">Nº Proyectos</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach($clientes as $cliente)
+                        <tr class="hover:bg-gray-50"
+                            data-cliente-id="{{ $cliente->id }}"
+                            data-num-proyectos="{{ $cliente->proyectos->count() }}"
+                            data-estados="{{ json_encode($cliente->proyectos->pluck('estado')->unique()->values()) }}"
+                            data-tipos="{{ json_encode($cliente->proyectos->pluck('tipo')->unique()->values()) }}"
+                            data-fecha="{{ $cliente->created_at }}">
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900 text-center">{{ $cliente->nombre }} {{ $cliente->apellido }}</div>
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900 text-center">{{ $cliente->email }}</div>
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900 text-center">{{ $cliente->empresa ?: 'Sin empresa' }}</div>
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900 text-center">{{ $cliente->proyectos->count() }}</div>
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-2">
+                                    <a href="{{ route('clientes.show', $cliente) }}" 
+                                       class="bg-blue-600 hover:bg-blue-700 p-2 rounded-lg transition-colors duration-200"
+                                       title="Ver Detalles">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                        </svg>
+                                    </a>
+                                    <a href="{{ route('clientes.proyectos.index', $cliente) }}" 
+                                       class="bg-green-600 hover:bg-green-700 p-2 rounded-lg transition-colors duration-200"
+                                       title="Ver Proyectos">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                        </svg>
+                                    </a>
+                                    @if(auth()->user()->can_edit || auth()->user()->is_admin)
+                                        <a href="{{ route('clientes.edit', $cliente) }}" 
+                                           class="bg-yellow-600 hover:bg-yellow-700 p-2 rounded-lg transition-colors duration-200"
+                                           title="Editar Cliente">
+                                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            </svg>
+                                        </a>
+                                        <button onclick="eliminarCliente({{ $cliente->id }})" 
+                                                class="bg-red-600 hover:bg-red-700 p-2 rounded-lg transition-colors duration-200"
+                                                title="Eliminar Cliente">
+                                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="px-6 py-4 border-t">
+                {{ $clientes->appends(['per_page' => request('per_page', 20)])->links() }}
+            </div>
+        </div>
     </div>
 
     <script>
         function toggleFiltros() {
             const menu = document.getElementById('menuFiltros');
             menu.classList.toggle('hidden');
-            
-            // Cerrar el menú al hacer clic fuera
-            document.addEventListener('click', function(event) {
-                const isClickInside = menu.contains(event.target) || 
-                                    event.target.closest('button')?.contains(event.target);
-                if (!isClickInside && !menu.classList.contains('hidden')) {
-                    menu.classList.add('hidden');
-                }
-            });
         }
 
-        // Función para aplicar todos los filtros
+        // Cerrar el menú de filtros cuando se hace clic fuera
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('menuFiltros');
+            const button = event.target.closest('[onclick="toggleFiltros()"]');
+            
+            if (!menu.contains(event.target) && !button && !menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+            }
+        });
+
         function aplicarFiltros() {
-            const cards = document.querySelectorAll('.grid > div:not(#noResultados)');
             const searchTerm = document.getElementById('buscadorClientes').value.toLowerCase();
             const filtroProyectos = document.getElementById('filtroProyectos').value;
             const filtroEstado = document.getElementById('filtroEstado').value;
-            const filtroTipo = document.getElementById('filtroTipo').value;
             const filtroOrden = document.getElementById('filtroOrden').value;
-            let resultadosEncontrados = false;
             
-            cards.forEach(card => {
-                const nombre = card.querySelector('h2').textContent.toLowerCase();
-                const email = card.querySelector('.text-gray-600').textContent.toLowerCase();
-                const empresa = card.querySelector('.text-gray-500').textContent.toLowerCase();
-                const numProyectos = parseInt(card.getAttribute('data-num-proyectos')) || 0;
-                const estados = JSON.parse(card.getAttribute('data-estados') || '[]');
-                const tipos = JSON.parse(card.getAttribute('data-tipos') || '[]');
+            const rows = document.querySelectorAll('tbody tr');
+            let resultadosEncontrados = false;
+
+            rows.forEach(row => {
+                const nombre = row.querySelector('td:first-child').textContent.toLowerCase();
+                const email = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                const empresa = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                const numProyectos = parseInt(row.getAttribute('data-num-proyectos')) || 0;
+                const estados = JSON.parse(row.getAttribute('data-estados') || '[]');
                 
                 let mostrar = true;
-                
+
                 // Filtro de búsqueda
                 if (searchTerm) {
-                    // Buscar en nombre del cliente, email y empresa
-                    const nombreCompleto = nombre.toLowerCase();
-                    const emailCliente = email.toLowerCase();
-                    const nombreEmpresa = empresa.toLowerCase();
-                    
-                    mostrar = nombreCompleto.includes(searchTerm) || 
-                             emailCliente.includes(searchTerm) || 
-                             nombreEmpresa.includes(searchTerm);
+                    mostrar = nombre.includes(searchTerm) || 
+                             email.includes(searchTerm) || 
+                             empresa.includes(searchTerm);
                 }
-                
+
                 // Filtro de número de proyectos
                 if (mostrar && filtroProyectos !== 'todos') {
-                    switch(filtroProyectos) {
-                        case 'mas3':
-                            mostrar = numProyectos > 3;
-                            break;
-                        case 'menos3':
-                            mostrar = numProyectos < 3;
-                            break;
+                    if (filtroProyectos === 'mas3') {
+                        mostrar = numProyectos > 3;
+                    } else if (filtroProyectos === 'menos3') {
+                        mostrar = numProyectos < 3;
                     }
                 }
-                
+
                 // Filtro de estado de proyectos
                 if (mostrar && filtroEstado !== 'todos') {
                     mostrar = estados.includes(filtroEstado);
                 }
-                
-                // Filtro de tipo de proyecto
-                if (mostrar && filtroTipo !== 'todos') {
-                    mostrar = tipos.includes(filtroTipo);
-                }
-                
-                card.style.display = mostrar ? '' : 'none';
+
+                row.style.display = mostrar ? '' : 'none';
                 if (mostrar) resultadosEncontrados = true;
             });
-            
-            // Mostrar/ocultar mensaje de no resultados
+
+            // Mostrar/ocultar tabla y mensaje de no resultados
             const noResultados = document.getElementById('noResultados');
-            noResultados.style.display = resultadosEncontrados ? 'none' : 'block';
+            const tablaClientes = document.getElementById('tablaClientes');
             
-            // Ordenar las tarjetas
-            const grid = document.querySelector('.grid');
-            const cardsArray = Array.from(cards);
-            
-            cardsArray.sort((a, b) => {
-                switch(filtroOrden) {
-                    case 'nombre':
-                        return a.querySelector('h2').textContent.localeCompare(b.querySelector('h2').textContent);
-                    case 'proyectos':
-                        return (parseInt(b.getAttribute('data-num-proyectos')) || 0) - 
-                               (parseInt(a.getAttribute('data-num-proyectos')) || 0);
-                    case 'recientes':
-                        return new Date(b.getAttribute('data-fecha')) - 
-                               new Date(a.getAttribute('data-fecha'));
-                    default:
-                        return 0;
+            if (resultadosEncontrados) {
+                noResultados.classList.add('hidden');
+                tablaClientes.classList.remove('hidden');
+            } else {
+                noResultados.classList.remove('hidden');
+                tablaClientes.classList.add('hidden');
+            }
+
+            // Ordenar las filas
+            const tbody = document.querySelector('tbody');
+            const rowsArray = Array.from(rows);
+
+            rowsArray.sort((a, b) => {
+                if (filtroOrden === 'nombre') {
+                    const nombreA = a.querySelector('td:first-child').textContent;
+                    const nombreB = b.querySelector('td:first-child').textContent;
+                    return nombreA.localeCompare(nombreB);
+                } else if (filtroOrden === 'proyectos') {
+                    const proyectosA = parseInt(a.getAttribute('data-num-proyectos')) || 0;
+                    const proyectosB = parseInt(b.getAttribute('data-num-proyectos')) || 0;
+                    return proyectosB - proyectosA;
+                } else if (filtroOrden === 'recientes') {
+                    const fechaA = new Date(a.getAttribute('data-fecha'));
+                    const fechaB = new Date(b.getAttribute('data-fecha'));
+                    return fechaB - fechaA;
                 }
+                return 0;
             });
-            
-            cardsArray.forEach(card => grid.appendChild(card));
+
+            // Reordenar las filas en la tabla
+            rowsArray.forEach(row => tbody.appendChild(row));
+        }
+
+        function resetFiltros() {
+            document.getElementById('buscadorClientes').value = '';
+            document.getElementById('filtroProyectos').value = 'todos';
+            document.getElementById('filtroEstado').value = 'todos';
+            document.getElementById('filtroOrden').value = 'nombre';
+            aplicarFiltros();
         }
 
         // Eventos para los filtros
-        document.getElementById('buscadorClientes').addEventListener('input', aplicarFiltros);
-        document.getElementById('filtroProyectos').addEventListener('change', aplicarFiltros);
-        document.getElementById('filtroEstado').addEventListener('change', aplicarFiltros);
-        document.getElementById('filtroTipo').addEventListener('change', aplicarFiltros);
-        document.getElementById('filtroOrden').addEventListener('change', aplicarFiltros);
+        document.addEventListener('DOMContentLoaded', function() {
+            const buscador = document.getElementById('buscadorClientes');
+            const filtroProyectos = document.getElementById('filtroProyectos');
+            const filtroEstado = document.getElementById('filtroEstado');
+            const filtroOrden = document.getElementById('filtroOrden');
+
+            if (buscador) buscador.addEventListener('input', aplicarFiltros);
+            if (filtroProyectos) filtroProyectos.addEventListener('change', aplicarFiltros);
+            if (filtroEstado) filtroEstado.addEventListener('change', aplicarFiltros);
+            if (filtroOrden) filtroOrden.addEventListener('change', aplicarFiltros);
+        });
 
         function eliminarCliente(clienteId) {
             if (confirm('¿Está seguro de que desea eliminar este cliente?')) {
@@ -388,14 +448,30 @@
             }
         }
 
-        function resetFiltros() {
-            document.getElementById('buscadorClientes').value = '';
-            document.getElementById('filtroProyectos').value = 'todos';
-            document.getElementById('filtroEstado').value = 'todos';
-            document.getElementById('filtroTipo').value = 'todos';
-            document.getElementById('filtroOrden').value = 'nombre';
-            aplicarFiltros();
+        function cambiarPaginacion(valor) {
+            // Obtener todos los parámetros actuales de la URL
+            const url = new URL(window.location.href);
+            const params = new URLSearchParams(url.search);
+            
+            // Actualizar o añadir el parámetro per_page
+            params.set('per_page', valor);
+            
+            // Mantener la página actual en 1 al cambiar el número de elementos por página
+            params.set('page', '1');
+            
+            // Actualizar la URL con los nuevos parámetros
+            url.search = params.toString();
+            window.location.href = url.toString();
         }
+
+        // Al cargar la página, establecer el valor correcto en el selector
+        document.addEventListener('DOMContentLoaded', function() {
+            const perPage = new URLSearchParams(window.location.search).get('per_page') || '20';
+            const select = document.getElementById('perPage');
+            if (select) {
+                select.value = perPage;
+            }
+        });
     </script>
 </body>
 </html> 

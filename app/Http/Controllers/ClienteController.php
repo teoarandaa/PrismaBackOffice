@@ -10,7 +10,11 @@ class ClienteController extends Controller
 {
     public function index()
     {
-        $clientes = Cliente::with('proyectos')->get();
+        $perPage = request('per_page', 20);
+        $clientes = Cliente::with('proyectos')
+                          ->orderBy('created_at', 'desc')
+                          ->paginate($perPage);
+
         return view('clientes.index', compact('clientes'));
     }
 
