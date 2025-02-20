@@ -10,58 +10,86 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function kpis()
+    public function kpis(Request $request)
     {
-        // KPIs Principales
-        $proyectosActivos = Proyecto::where('estado', 'En progreso')->count();
-        $ingresosTotales = Proyecto::whereYear('created_at', Carbon::now()->year)
-                                  ->sum('presupuesto');
+        $rango = $request->get('rango', 'mes');
         
-        // Tiempo medio de desarrollo (usando updated_at como en rendimiento)
-        $tiempoMedioDesarrollo = Proyecto::whereNotNull('fecha_inicio')
-            ->where('estado', 'Completado')
-            ->avg(DB::raw('DATEDIFF(updated_at, fecha_inicio)'));
+        // Obtener las tendencias según el rango seleccionado
+        $tendencias = $this->obtenerDatosTendencias($rango);
 
-        // Tasa de éxito (proyectos completados vs total)
-        $totalProyectos = Proyecto::count();
+        // Estadísticas de estado de proyectos
+        $proyectosActivos = Proyecto::where('estado', 'En Desarrollo')->count();
         $proyectosCompletados = Proyecto::where('estado', 'Completado')->count();
-        $tasaExito = $totalProyectos > 0 ? round(($proyectosCompletados / $totalProyectos) * 100) : 0;
+        $proyectosEnDesarrollo = Proyecto::where('estado', 'En Desarrollo')->count();
+        $proyectosCancelados = Proyecto::where('estado', 'Cancelado')->count();
+        $proyectosIniciados = Proyecto::whereNotNull('fecha_inicio')->count();
+        
+        // Cálculo de totales y tasas
+        $totalProyectos = Proyecto::count();
+        $ingresosTotales = Proyecto::sum('presupuesto');
+        $tasaExito = $totalProyectos > 0 ? round(($proyectosCompletados / $totalProyectos) * 100, 1) : 0;
 
-        // Estadísticas por tipo y estado
+        // Tiempo medio de desarrollo
+        $tiempoMedioDesarrollo = round(Proyecto::whereNotNull('fecha_inicio')
+            ->whereNotNull('updated_at')
+            ->where('estado', 'Completado')
+            ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as promedio')
+            ->value('promedio') ?? 0);
+
+        // Estadísticas por tipo
         $totalApps = Proyecto::where('tipo', 'app')->count();
         $totalWebs = Proyecto::where('tipo', 'web')->count();
-        
+
+        // Estadísticas de presupuestos
+        $presupuestoPromedioApps = Proyecto::where('tipo', 'app')->avg('presupuesto') ?? 0;
+        $presupuestoPromedioWebs = Proyecto::where('tipo', 'web')->avg('presupuesto') ?? 0;
+        $presupuestoMaximoApps = Proyecto::where('tipo', 'app')->max('presupuesto') ?? 0;
+        $presupuestoMaximoWebs = Proyecto::where('tipo', 'web')->max('presupuesto') ?? 0;
+        $presupuestoMinimoApps = Proyecto::where('tipo', 'app')->min('presupuesto') ?? 0;
+        $presupuestoMinimoWebs = Proyecto::where('tipo', 'web')->min('presupuesto') ?? 0;
+
+        // Estadísticas por estado
         $estadisticas = [
-            'en_progreso' => Proyecto::where('estado', 'En progreso')->count(),
-            'completados' => Proyecto::where('estado', 'Completado')->count(),
-            'cancelados' => Proyecto::where('estado', 'Cancelado')->count(),
+            'en_progreso' => $proyectosEnDesarrollo,
+            'completados' => $proyectosCompletados,
+            'cancelados' => $proyectosCancelados
         ];
 
         // Top Clientes
-        $topClientes = Cliente::withCount('proyectos as total_proyectos')
-                            ->orderBy('total_proyectos', 'desc')
-                            ->limit(5)
-                            ->get();
+        $topClientes = Cliente::withCount('proyectos')
+            ->withSum('proyectos as total_ingresos', 'presupuesto')
+            ->orderByDesc('total_ingresos')
+            ->take(5)
+            ->get();
 
-        // Presupuestos promedio
-        $presupuestoPromedioApps = Proyecto::where('tipo', 'app')->avg('presupuesto') ?? 0;
-        $presupuestoPromedioWebs = Proyecto::where('tipo', 'web')->avg('presupuesto') ?? 0;
+        return view('dashboard.kpis', compact(
+            'tendencias',
+            'rango',
+            'proyectosActivos',
+            'proyectosCompletados',
+            'proyectosEnDesarrollo',
+            'proyectosCancelados',
+            'proyectosIniciados',
+            'ingresosTotales',
+            'tiempoMedioDesarrollo',
+            'tasaExito',
+            'totalProyectos',
+            'totalApps',
+            'totalWebs',
+            'estadisticas',
+            'topClientes',
+            'presupuestoPromedioApps',
+            'presupuestoPromedioWebs',
+            'presupuestoMaximoApps',
+            'presupuestoMaximoWebs',
+            'presupuestoMinimoApps',
+            'presupuestoMinimoWebs'
+        ));
+    }
 
-        // Rendimiento mensual
-        $mesActual = Carbon::now();
-        $proyectosIniciadosMes = Proyecto::whereMonth('fecha_inicio', $mesActual->month)
-                                        ->whereYear('fecha_inicio', $mesActual->year)
-                                        ->count();
-        $proyectosCompletadosMes = Proyecto::whereMonth('fecha_finalizacion', $mesActual->month)
-                                          ->whereYear('fecha_finalizacion', $mesActual->year)
-                                          ->where('estado', 'Completado')
-                                          ->count();
-
-        // Añadir estas líneas para los proyectos iniciados y completados
-        $proyectosIniciados = Proyecto::count();
-        $proyectosCompletados = Proyecto::where('estado', 'Completado')->count();
-
-        // Datos para las tendencias (últimos 6 meses)
+    // Nuevo método auxiliar para obtener los datos de tendencias
+    private function obtenerDatosTendencias($rango)
+    {
         $tendencias = [
             'meses' => [],
             'ingresos' => [],
@@ -69,54 +97,108 @@ class DashboardController extends Controller
             'tasas_exito' => []
         ];
 
-        for ($i = 5; $i >= 0; $i--) {
-            $fecha = now()->subMonths($i);
-            $mes = $fecha->format('M Y');
-            $inicio = $fecha->startOfMonth();
-            $fin = $fecha->copy()->endOfMonth();
+        switch($rango) {
+            case 'mes':
+                // Datos diarios del último mes
+                $inicio = now()->startOfMonth();
+                $fin = now()->endOfMonth();
+                
+                for ($fecha = $inicio->copy(); $fecha <= $fin; $fecha->addDay()) {
+                    $tendencias['meses'][] = $fecha->format('d M');
+                    
+                    $datosDelDia = Proyecto::whereDate('created_at', $fecha);
+                    $tendencias['ingresos'][] = $datosDelDia->sum('presupuesto');
+                    
+                    $tiempoMedio = $datosDelDia->whereNotNull('fecha_inicio')
+                        ->whereNotNull('updated_at')
+                        ->where('estado', 'Completado')
+                        ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as tiempo_medio')
+                        ->value('tiempo_medio') ?? 0;
+                    $tendencias['tiempos'][] = round($tiempoMedio, 1);
+                    
+                    $total = $datosDelDia->count();
+                    $completados = $datosDelDia->where('estado', 'Completado')->count();
+                    $tendencias['tasas_exito'][] = $total > 0 ? round(($completados / $total) * 100, 1) : 0;
+                }
+                break;
 
-            // Ingresos mensuales
-            $ingresos = Proyecto::whereBetween('created_at', [$inicio, $fin])
-                ->sum('presupuesto');
+            case 'trimestre':
+                // Datos semanales del último trimestre
+                $inicio = now()->startOfWeek()->subWeeks(11);
+                $fin = now()->endOfWeek();
+                
+                for ($fecha = $inicio->copy(); $fecha <= $fin; $fecha->addWeek()) {
+                    $finSemana = $fecha->copy()->endOfWeek();
+                    $tendencias['meses'][] = $fecha->format('d M') . ' - ' . $finSemana->format('d M');
+                    
+                    $datosSemana = Proyecto::whereBetween('created_at', [$fecha, $finSemana]);
+                    $tendencias['ingresos'][] = $datosSemana->sum('presupuesto');
+                    
+                    $tiempoMedio = $datosSemana->whereNotNull('fecha_inicio')
+                        ->whereNotNull('updated_at')
+                        ->where('estado', 'Completado')
+                        ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as tiempo_medio')
+                        ->value('tiempo_medio') ?? 0;
+                    $tendencias['tiempos'][] = round($tiempoMedio, 1);
+                    
+                    $total = $datosSemana->count();
+                    $completados = $datosSemana->where('estado', 'Completado')->count();
+                    $tendencias['tasas_exito'][] = $total > 0 ? round(($completados / $total) * 100, 1) : 0;
+                }
+                break;
 
-            // Tiempo medio de desarrollo
-            $tiempoMedio = Proyecto::whereBetween('created_at', [$inicio, $fin])
-                ->whereNotNull('fecha_inicio')
-                ->whereNotNull('updated_at')
-                ->where('estado', 'Completado')
-                ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as tiempo_medio')
-                ->value('tiempo_medio') ?? 0;
+            case 'anio':
+                // Datos mensuales del último año
+                for ($i = 11; $i >= 0; $i--) {
+                    $fecha = now()->subMonths($i);
+                    $tendencias['meses'][] = $fecha->format('M Y');
+                    
+                    $datosMes = Proyecto::whereYear('created_at', $fecha->year)
+                        ->whereMonth('created_at', $fecha->month);
+                    $tendencias['ingresos'][] = $datosMes->sum('presupuesto');
+                    
+                    $tiempoMedio = $datosMes->whereNotNull('fecha_inicio')
+                        ->whereNotNull('updated_at')
+                        ->where('estado', 'Completado')
+                        ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as tiempo_medio')
+                        ->value('tiempo_medio') ?? 0;
+                    $tendencias['tiempos'][] = round($tiempoMedio, 1);
+                    
+                    $total = $datosMes->count();
+                    $completados = $datosMes->where('estado', 'Completado')->count();
+                    $tendencias['tasas_exito'][] = $total > 0 ? round(($completados / $total) * 100, 1) : 0;
+                }
+                break;
 
-            // Tasa de éxito
-            $total = Proyecto::whereBetween('created_at', [$inicio, $fin])->count();
-            $completados = Proyecto::whereBetween('created_at', [$inicio, $fin])
-                ->where('estado', 'Completado')
-                ->count();
-            $tasaExito = $total > 0 ? round(($completados / $total) * 100, 1) : 0;
-
-            $tendencias['meses'][] = $mes;
-            $tendencias['ingresos'][] = $ingresos;
-            $tendencias['tiempos'][] = round($tiempoMedio, 1);
-            $tendencias['tasas_exito'][] = $tasaExito;
+            case 'general':
+                // Datos anuales desde el inicio
+                $primerProyecto = Proyecto::oldest('created_at')->first();
+                if ($primerProyecto) {
+                    $añoInicio = $primerProyecto->created_at->year;
+                    $añoFin = now()->year;
+                    
+                    for ($año = $añoInicio; $año <= $añoFin; $año++) {
+                        $tendencias['meses'][] = (string)$año;
+                        
+                        $datosAño = Proyecto::whereYear('created_at', $año);
+                        $tendencias['ingresos'][] = $datosAño->sum('presupuesto');
+                        
+                        $tiempoMedio = $datosAño->whereNotNull('fecha_inicio')
+                            ->whereNotNull('updated_at')
+                            ->where('estado', 'Completado')
+                            ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as tiempo_medio')
+                            ->value('tiempo_medio') ?? 0;
+                        $tendencias['tiempos'][] = round($tiempoMedio, 1);
+                        
+                        $total = $datosAño->count();
+                        $completados = $datosAño->where('estado', 'Completado')->count();
+                        $tendencias['tasas_exito'][] = $total > 0 ? round(($completados / $total) * 100, 1) : 0;
+                    }
+                }
+                break;
         }
 
-        return view('dashboard.kpis', compact(
-            'proyectosActivos',
-            'ingresosTotales',
-            'tiempoMedioDesarrollo',
-            'tasaExito',
-            'totalApps',
-            'totalWebs',
-            'estadisticas',
-            'topClientes',
-            'presupuestoPromedioApps',
-            'presupuestoPromedioWebs',
-            'proyectosIniciadosMes',
-            'proyectosCompletadosMes',
-            'proyectosIniciados',
-            'proyectosCompletados',
-            'tendencias'
-        ));
+        return $tendencias;
     }
 
     public function topClientesDetalle()
@@ -562,5 +644,149 @@ class DashboardController extends Controller
             : 0;
 
         return view('dashboard.tasa-exito-detalle', compact('estadisticas'));
+    }
+
+    public function obtenerTendencias(Request $request)
+    {
+        $rango = $request->get('rango', 'mes');
+        $grafico = $request->get('grafico');
+        
+        $tendencias = [
+            'meses' => [],
+            'ingresos' => [],
+            'tiempos' => [],
+            'tasas_exito' => []
+        ];
+
+        switch($rango) {
+            case 'mes':
+                // Datos diarios del último mes
+                $inicio = now()->startOfMonth();
+                $fin = now()->endOfMonth();
+                
+                for ($fecha = $inicio->copy(); $fecha <= $fin; $fecha->addDay()) {
+                    $tendencias['meses'][] = $fecha->format('d M');
+                    
+                    $datosDelDia = Proyecto::whereDate('created_at', $fecha);
+                    
+                    switch($grafico) {
+                        case 'ingresosTendencia':
+                            $tendencias['ingresos'][] = $datosDelDia->sum('presupuesto');
+                            break;
+                        case 'tiempoTendencia':
+                            $tiempoMedio = $datosDelDia->whereNotNull('fecha_inicio')
+                                ->whereNotNull('updated_at')
+                                ->where('estado', 'Completado')
+                                ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as tiempo_medio')
+                                ->value('tiempo_medio') ?? 0;
+                            $tendencias['tiempos'][] = round($tiempoMedio, 1);
+                            break;
+                        case 'exitoTendencia':
+                            $total = $datosDelDia->count();
+                            $completados = $datosDelDia->where('estado', 'Completado')->count();
+                            $tendencias['tasas_exito'][] = $total > 0 ? round(($completados / $total) * 100, 1) : 0;
+                            break;
+                    }
+                }
+                break;
+
+            case 'trimestre':
+                // Datos semanales del último trimestre
+                $inicio = now()->startOfWeek()->subWeeks(11);
+                $fin = now()->endOfWeek();
+                
+                for ($fecha = $inicio->copy(); $fecha <= $fin; $fecha->addWeek()) {
+                    $finSemana = $fecha->copy()->endOfWeek();
+                    $tendencias['meses'][] = $fecha->format('d M') . ' - ' . $finSemana->format('d M');
+                    
+                    $datosSemana = Proyecto::whereBetween('created_at', [$fecha, $finSemana]);
+                    
+                    switch($grafico) {
+                        case 'ingresosTendencia':
+                            $tendencias['ingresos'][] = $datosSemana->sum('presupuesto');
+                            break;
+                        case 'tiempoTendencia':
+                            $tiempoMedio = $datosSemana->whereNotNull('fecha_inicio')
+                                ->whereNotNull('updated_at')
+                                ->where('estado', 'Completado')
+                                ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as tiempo_medio')
+                                ->value('tiempo_medio') ?? 0;
+                            $tendencias['tiempos'][] = round($tiempoMedio, 1);
+                            break;
+                        case 'exitoTendencia':
+                            $total = $datosSemana->count();
+                            $completados = $datosSemana->where('estado', 'Completado')->count();
+                            $tendencias['tasas_exito'][] = $total > 0 ? round(($completados / $total) * 100, 1) : 0;
+                            break;
+                    }
+                }
+                break;
+
+            case 'anio':
+                // Datos mensuales del último año
+                for ($i = 11; $i >= 0; $i--) {
+                    $fecha = now()->subMonths($i);
+                    $tendencias['meses'][] = $fecha->format('M Y');
+                    
+                    $datosMes = Proyecto::whereYear('created_at', $fecha->year)
+                        ->whereMonth('created_at', $fecha->month);
+                    
+                    switch($grafico) {
+                        case 'ingresosTendencia':
+                            $tendencias['ingresos'][] = $datosMes->sum('presupuesto');
+                            break;
+                        case 'tiempoTendencia':
+                            $tiempoMedio = $datosMes->whereNotNull('fecha_inicio')
+                                ->whereNotNull('updated_at')
+                                ->where('estado', 'Completado')
+                                ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as tiempo_medio')
+                                ->value('tiempo_medio') ?? 0;
+                            $tendencias['tiempos'][] = round($tiempoMedio, 1);
+                            break;
+                        case 'exitoTendencia':
+                            $total = $datosMes->count();
+                            $completados = $datosMes->where('estado', 'Completado')->count();
+                            $tendencias['tasas_exito'][] = $total > 0 ? round(($completados / $total) * 100, 1) : 0;
+                            break;
+                    }
+                }
+                break;
+
+            case 'general':
+                // Datos anuales desde el inicio
+                $primerProyecto = Proyecto::oldest('created_at')->first();
+                if ($primerProyecto) {
+                    $añoInicio = $primerProyecto->created_at->year;
+                    $añoFin = now()->year;
+                    
+                    for ($año = $añoInicio; $año <= $añoFin; $año++) {
+                        $tendencias['meses'][] = (string)$año;
+                        
+                        $datosAño = Proyecto::whereYear('created_at', $año);
+                        
+                        switch($grafico) {
+                            case 'ingresosTendencia':
+                                $tendencias['ingresos'][] = $datosAño->sum('presupuesto');
+                                break;
+                            case 'tiempoTendencia':
+                                $tiempoMedio = $datosAño->whereNotNull('fecha_inicio')
+                                    ->whereNotNull('updated_at')
+                                    ->where('estado', 'Completado')
+                                    ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as tiempo_medio')
+                                    ->value('tiempo_medio') ?? 0;
+                                $tendencias['tiempos'][] = round($tiempoMedio, 1);
+                                break;
+                            case 'exitoTendencia':
+                                $total = $datosAño->count();
+                                $completados = $datosAño->where('estado', 'Completado')->count();
+                                $tendencias['tasas_exito'][] = $total > 0 ? round(($completados / $total) * 100, 1) : 0;
+                                break;
+                        }
+                    }
+                }
+                break;
+        }
+
+        return response()->json($tendencias);
     }
 } 

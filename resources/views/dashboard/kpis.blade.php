@@ -107,21 +107,45 @@
             <!-- Gráficos de Tendencias -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="text-lg font-semibold mb-4 text-green-600">Tendencia de Ingresos</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-green-600">Tendencia de Ingresos</h3>
+                        <select class="text-sm border rounded-md p-1" onchange="actualizarRangoTiempo('ingresosTendencia', this.value)">
+                            <option value="mes">Último Mes</option>
+                            <option value="trimestre">Último Trimestre</option>
+                            <option value="anio">Último Año</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
                     <div style="height: 200px;">
                         <canvas id="ingresosTendencia"></canvas>
                     </div>
                 </div>
 
                 <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="text-lg font-semibold mb-4 text-purple-600">Tendencia Tiempo de Desarrollo</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-purple-600">Tendencia Tiempo de Desarrollo</h3>
+                        <select class="text-sm border rounded-md p-1" onchange="actualizarRangoTiempo('tiempoTendencia', this.value)">
+                            <option value="mes">Último Mes</option>
+                            <option value="trimestre">Último Trimestre</option>
+                            <option value="anio">Último Año</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
                     <div style="height: 200px;">
                         <canvas id="tiempoTendencia"></canvas>
                     </div>
                 </div>
 
                 <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="text-lg font-semibold mb-4 text-yellow-600">Tendencia Tasa de Éxito</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-yellow-600">Tendencia Tasa de Éxito</h3>
+                        <select class="text-sm border rounded-md p-1" onchange="actualizarRangoTiempo('exitoTendencia', this.value)">
+                            <option value="mes">Último Mes</option>
+                            <option value="trimestre">Último Trimestre</option>
+                            <option value="anio">Último Año</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
                     <div style="height: 200px;">
                         <canvas id="exitoTendencia"></canvas>
                     </div>
@@ -201,22 +225,177 @@
     </div>
 
     <script>
-        // Función para clonar un gráfico en el modal
+        let graficos = {};
+
+        function inicializarGraficos() {
+            const opcionesComunes = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            };
+
+            // Gráfico de Ingresos
+            graficos.ingresos = new Chart(document.getElementById('ingresosTendencia'), {
+                type: 'line',
+                data: {
+                    labels: @json($tendencias['meses']),
+                    datasets: [{
+                        label: 'Ingresos',
+                        data: @json($tendencias['ingresos']),
+                        borderColor: '#059669',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    ...opcionesComunes,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '€' + value.toLocaleString();
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Gráfico de Tiempo de Desarrollo
+            graficos.tiempo = new Chart(document.getElementById('tiempoTendencia'), {
+                type: 'line',
+                data: {
+                    labels: @json($tendencias['meses']),
+                    datasets: [{
+                        label: 'Días promedio',
+                        data: @json($tendencias['tiempos']),
+                        borderColor: '#7C3AED',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    ...opcionesComunes,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + ' días';
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Gráfico de Tasa de Éxito
+            graficos.exito = new Chart(document.getElementById('exitoTendencia'), {
+                type: 'line',
+                data: {
+                    labels: @json($tendencias['meses']),
+                    datasets: [{
+                        label: 'Tasa de éxito',
+                        data: @json($tendencias['tasas_exito']),
+                        borderColor: '#D97706',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    ...opcionesComunes,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function actualizarRangoTiempo(graficoId, rango) {
+            try {
+                const response = await fetch(`{{ route('dashboard.tendencias') }}?grafico=${graficoId}&rango=${rango}`);
+                if (!response.ok) {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+                const datos = await response.json();
+                
+                let grafico;
+                switch(graficoId) {
+                    case 'ingresosTendencia':
+                        grafico = graficos.ingresos;
+                        break;
+                    case 'tiempoTendencia':
+                        grafico = graficos.tiempo;
+                        break;
+                    case 'exitoTendencia':
+                        grafico = graficos.exito;
+                        break;
+                }
+                
+                if (grafico) {
+                    grafico.data.labels = datos.meses;
+                    grafico.data.datasets[0].data = datos[graficoId === 'ingresosTendencia' ? 'ingresos' : 
+                                                       graficoId === 'tiempoTendencia' ? 'tiempos' : 'tasas_exito'];
+
+                    const rotacion = rango === 'mes' || rango === 'trimestre' ? 45 : 0;
+                    grafico.options.scales.x.ticks.maxRotation = rotacion;
+                    grafico.options.scales.x.ticks.minRotation = rotacion;
+
+                    grafico.update();
+
+                    console.log('Rango:', rango);
+                    console.log('Datos recibidos:', datos);
+                }
+            } catch (error) {
+                console.error('Error al actualizar el gráfico:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', inicializarGraficos);
+
         function showChartInModal(chartId, title) {
             const modal = document.getElementById('chartModal');
             const modalTitle = document.getElementById('modalTitle');
             const originalChart = Chart.getChart(chartId);
             
-            // Configurar título
             modalTitle.textContent = title;
             
-            // Destruir gráfico modal anterior si existe
             const existingModalChart = Chart.getChart('modalChart');
             if (existingModalChart) {
                 existingModalChart.destroy();
             }
             
-            // Clonar configuración del gráfico original
             const modalCanvas = document.getElementById('modalChart');
             new Chart(modalCanvas, {
                 type: originalChart.config.type,
@@ -231,7 +410,6 @@
             modal.style.display = 'block';
         }
 
-        // Cerrar modal
         document.querySelector('.close').onclick = function() {
             document.getElementById('chartModal').style.display = 'none';
         }
@@ -243,7 +421,6 @@
             }
         }
 
-        // Hacer los gráficos clickeables
         document.querySelectorAll('.bg-white.p-6.rounded-lg.shadow').forEach(container => {
             container.style.cursor = 'pointer';
             container.onclick = function() {
@@ -253,7 +430,6 @@
             }
         });
 
-        // Gráficos existentes
         new Chart(document.getElementById('tipoProyectos'), {
             type: 'pie',
             data: {
@@ -285,122 +461,6 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false
-            }
-        });
-
-        // Nuevos gráficos de tendencias
-        new Chart(document.getElementById('ingresosTendencia'), {
-            type: 'line',
-            data: {
-                labels: {!! json_encode($tendencias['meses']) !!},
-                datasets: [{
-                    label: 'Ingresos Mensuales',
-                    data: {!! json_encode($tendencias['ingresos']) !!},
-                    borderColor: '#10B981',
-                    backgroundColor: '#10B981',
-                    tension: 0.1,
-                    fill: false
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        labels: {
-                            usePointStyle: false,
-                            boxWidth: 40,
-                            padding: 20
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return value + '€';
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        new Chart(document.getElementById('tiempoTendencia'), {
-            type: 'line',
-            data: {
-                labels: {!! json_encode($tendencias['meses']) !!},
-                datasets: [{
-                    label: 'Tiempo Medio (días)',
-                    data: {!! json_encode($tendencias['tiempos']) !!},
-                    borderColor: '#8B5CF6',
-                    backgroundColor: '#8B5CF6',
-                    tension: 0.1,
-                    fill: false
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        labels: {
-                            usePointStyle: false,
-                            boxWidth: 40,
-                            padding: 20
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return value + ' días';
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        new Chart(document.getElementById('exitoTendencia'), {
-            type: 'line',
-            data: {
-                labels: {!! json_encode($tendencias['meses']) !!},
-                datasets: [{
-                    label: 'Tasa de Éxito (%)',
-                    data: {!! json_encode($tendencias['tasas_exito']) !!},
-                    borderColor: '#F59E0B',
-                    backgroundColor: '#F59E0B',
-                    tension: 0.1,
-                    fill: false
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        labels: {
-                            usePointStyle: false,
-                            boxWidth: 40,
-                            padding: 20
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                        ticks: {
-                            callback: function(value) {
-                                return value + '%';
-                            }
-                        }
-                    }
-                }
             }
         });
     </script>
