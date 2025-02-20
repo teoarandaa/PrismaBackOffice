@@ -164,15 +164,7 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @foreach($proyectos as $proyecto)
-                    <tr data-proyecto="{{ json_encode([
-                        'id' => $proyecto->id,
-                        'nombre' => $proyecto->nombre_proyecto,
-                        'estado' => $proyecto->estado,
-                        'fecha_inicio' => $proyecto->fecha_inicio,
-                        'fecha_finalizacion' => $proyecto->fecha_finalizacion,
-                        'fecha_completado' => $proyecto->fecha_completado,
-                        'presupuesto' => $proyecto->presupuesto
-                    ]) }}">
+                    <tr data-proyecto-id="{{ $proyecto->id }}" class="hover:bg-gray-50">
                         <td class="px-4 py-3 text-center text-sm text-gray-500">
                             <div class="text-sm font-medium text-gray-900">{{ $proyecto->nombre_proyecto }}</div>
                             <div class="text-sm text-gray-500">{{ Str::limit($proyecto->descripcion, 50) }}</div>
@@ -407,8 +399,11 @@
                     return response.json();
                 })
                 .then(data => {
+                    const fila = document.querySelector(`tr[data-proyecto-id="${proyectoId}"]`);
+                    if (fila) {
+                        fila.remove();
+                    }
                     alert('Proyecto eliminado correctamente');
-                    document.querySelector(`tr[data-proyecto-id="${proyectoId}"]`).remove();
                 })
                 .catch(error => {
                     console.error('Error:', error);
