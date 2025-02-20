@@ -423,12 +423,44 @@ class DashboardController extends Controller
         if ($request->filled('tipo')) {
             $query->where('tipo', $request->tipo);
         }
-        if ($request->filled('fecha_inicio')) {
-            $query->whereDate('fecha_inicio', '>=', $request->fecha_inicio);
+
+        // Filtro por rango de fechas de inicio/fin
+        if ($request->filled('fecha_inicio') || $request->filled('fecha_fin')) {
+            $query->where(function($q) use ($request) {
+                $fechaInicio = $request->fecha_inicio;
+                $fechaFin = $request->fecha_fin;
+
+                if ($fechaInicio && $fechaFin) {
+                    // Buscar proyectos que se solapen con el rango de fechas (inclusive)
+                    $q->where(function($query) use ($fechaInicio, $fechaFin) {
+                        $query->where(function($q) use ($fechaInicio, $fechaFin) {
+                            // El proyecto empieza dentro o en el límite del rango
+                            $q->whereDate('fecha_inicio', '>=', $fechaInicio)
+                              ->whereDate('fecha_inicio', '<=', $fechaFin);
+                        })->orWhere(function($q) use ($fechaInicio, $fechaFin) {
+                            // El proyecto termina dentro o en el límite del rango
+                            $q->whereDate('fecha_finalizacion', '>=', $fechaInicio)
+                              ->whereDate('fecha_finalizacion', '<=', $fechaFin);
+                        })->orWhere(function($q) use ($fechaInicio, $fechaFin) {
+                            // El proyecto abarca todo el rango
+                            $q->whereDate('fecha_inicio', '<=', $fechaInicio)
+                              ->whereDate('fecha_finalizacion', '>=', $fechaFin);
+                        });
+                    });
+                } elseif ($fechaInicio) {
+                    $q->whereDate('fecha_finalizacion', '>=', $fechaInicio);
+                } elseif ($fechaFin) {
+                    $q->whereDate('fecha_inicio', '<=', $fechaFin);
+                }
+            });
         }
-        if ($request->filled('fecha_fin')) {
-            $query->whereDate('fecha_finalizacion', '<=', $request->fecha_fin);
+
+        // Filtro por fecha de completado
+        if ($request->filled('fecha_completado')) {
+            $query->where('estado', 'Completado')
+                  ->whereDate('updated_at', '<=', $request->fecha_completado);
         }
+
         if ($request->filled('duracion_min')) {
             $query->whereRaw('DATEDIFF(CASE WHEN estado = "Completado" THEN updated_at ELSE CURRENT_TIMESTAMP END, fecha_inicio) >= ?', [$request->duracion_min]);
         }

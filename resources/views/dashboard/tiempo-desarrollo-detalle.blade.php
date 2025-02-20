@@ -141,6 +141,13 @@
                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-700">Fecha Completado</label>
+                            <input type="date" 
+                                   name="fecha_completado" 
+                                   value="{{ request('fecha_completado') }}"
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-700">Duración (días)</label>
                             <div class="flex gap-2">
                                 <input type="number" 
