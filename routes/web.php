@@ -90,4 +90,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/tiempo-desarrollo', [DashboardController::class, 'tiempoDesarrolloDetalle'])->name('dashboard.tiempo-desarrollo');
     Route::get('/dashboard/tasa-exito', [DashboardController::class, 'tasaExitoDetalle'])->name('dashboard.tasa-exito');
     Route::get('/dashboard/tendencias', [DashboardController::class, 'obtenerTendencias'])->name('dashboard.tendencias');
+    Route::get('/dashboard/estadisticas', [DashboardController::class, 'obtenerEstadisticasGraficos'])->name('dashboard.estadisticas');
 });

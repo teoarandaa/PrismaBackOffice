@@ -90,14 +90,30 @@
             <!-- Gráficos Principales -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="text-lg font-semibold mb-4">Distribución de Proyectos</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold">Distribución de Proyectos</h3>
+                        <select class="text-sm border rounded-md p-1" onchange="actualizarRangoTiempo('tipoProyectos', this.value)">
+                            <option value="mes">Último Mes</option>
+                            <option value="trimestre">Último Trimestre</option>
+                            <option value="anio">Último Año</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
                     <div style="height: 200px;">
                         <canvas id="tipoProyectos"></canvas>
                     </div>
                 </div>
                 
                 <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="text-lg font-semibold mb-4">Estado de Proyectos</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold">Estado de Proyectos</h3>
+                        <select class="text-sm border rounded-md p-1" onchange="actualizarRangoTiempo('estadoProyectos', this.value)">
+                            <option value="mes">Último Mes</option>
+                            <option value="trimestre">Último Trimestre</option>
+                            <option value="anio">Último Año</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
                     <div style="height: 200px;">
                         <canvas id="estadoProyectos"></canvas>
                     </div>
@@ -340,42 +356,99 @@
                     }
                 }
             });
+
+            // Gráfico de tipo de proyectos
+            graficos.tipos = new Chart(document.getElementById('tipoProyectos'), {
+                type: 'pie',
+                data: {
+                    labels: ['Apps', 'Webs'],
+                    datasets: [{
+                        data: [{{ $totalApps }}, {{ $totalWebs }}],
+                        backgroundColor: ['#818CF8', '#34D399']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Gráfico de estado de proyectos
+            graficos.estados = new Chart(document.getElementById('estadoProyectos'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['En Progreso', 'Completados', 'Cancelados'],
+                    datasets: [{
+                        data: [
+                            {{ $estadisticas['en_progreso'] }}, 
+                            {{ $estadisticas['completados'] }}, 
+                            {{ $estadisticas['cancelados'] }}
+                        ],
+                        backgroundColor: ['#FCD34D', '#34D399', '#EF4444']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
         }
 
         async function actualizarRangoTiempo(graficoId, rango) {
             try {
-                const response = await fetch(`{{ route('dashboard.tendencias') }}?grafico=${graficoId}&rango=${rango}`);
+                console.log('Actualizando gráfico:', graficoId, 'con rango:', rango);
+                
+                const response = await fetch(`{{ route('dashboard.estadisticas') }}?grafico=${graficoId}&rango=${rango}`);
                 if (!response.ok) {
+                    console.error('Error en la respuesta:', response.status, response.statusText);
                     throw new Error('Error en la respuesta del servidor');
                 }
+                
                 const datos = await response.json();
+                console.log('Datos recibidos:', datos);
                 
                 let grafico;
                 switch(graficoId) {
+                    case 'tipoProyectos':
+                        grafico = graficos.tipos;
+                        console.log('Actualizando datos de tipo proyectos:', [datos.apps, datos.webs]);
+                        grafico.data.datasets[0].data = [datos.apps, datos.webs];
+                        break;
+                    case 'estadoProyectos':
+                        grafico = graficos.estados;
+                        console.log('Actualizando datos de estado proyectos:', [
+                            datos.en_progreso,
+                            datos.completados,
+                            datos.cancelados
+                        ]);
+                        grafico.data.datasets[0].data = [
+                            datos.en_progreso,
+                            datos.completados,
+                            datos.cancelados
+                        ];
+                        break;
                     case 'ingresosTendencia':
                         grafico = graficos.ingresos;
+                        grafico.data.labels = datos.meses;
+                        grafico.data.datasets[0].data = datos.ingresos;
                         break;
                     case 'tiempoTendencia':
                         grafico = graficos.tiempo;
+                        grafico.data.labels = datos.meses;
+                        grafico.data.datasets[0].data = datos.tiempos;
                         break;
                     case 'exitoTendencia':
                         grafico = graficos.exito;
+                        grafico.data.labels = datos.meses;
+                        grafico.data.datasets[0].data = datos.tasas_exito;
                         break;
                 }
                 
                 if (grafico) {
-                    grafico.data.labels = datos.meses;
-                    grafico.data.datasets[0].data = datos[graficoId === 'ingresosTendencia' ? 'ingresos' : 
-                                                       graficoId === 'tiempoTendencia' ? 'tiempos' : 'tasas_exito'];
-
-                    const rotacion = rango === 'mes' || rango === 'trimestre' ? 45 : 0;
-                    grafico.options.scales.x.ticks.maxRotation = rotacion;
-                    grafico.options.scales.x.ticks.minRotation = rotacion;
-
                     grafico.update();
-
-                    console.log('Rango:', rango);
-                    console.log('Datos recibidos:', datos);
+                    console.log('Gráfico actualizado:', graficoId);
+                } else {
+                    console.error('No se encontró el gráfico:', graficoId);
                 }
             } catch (error) {
                 console.error('Error al actualizar el gráfico:', error);
@@ -427,40 +500,6 @@
                 const title = this.querySelector('h3').textContent;
                 const canvas = this.querySelector('canvas');
                 showChartInModal(canvas.id, title);
-            }
-        });
-
-        new Chart(document.getElementById('tipoProyectos'), {
-            type: 'pie',
-            data: {
-                labels: ['Apps', 'Webs'],
-                datasets: [{
-                    data: [{{ $totalApps }}, {{ $totalWebs }}],
-                    backgroundColor: ['#818CF8', '#34D399']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
-
-        new Chart(document.getElementById('estadoProyectos'), {
-            type: 'doughnut',
-            data: {
-                labels: ['En Progreso', 'Completados', 'Cancelados'],
-                datasets: [{
-                    data: [
-                        {{ $estadisticas['en_progreso'] }}, 
-                        {{ $estadisticas['completados'] }}, 
-                        {{ $estadisticas['cancelados'] }}
-                    ],
-                    backgroundColor: ['#FCD34D', '#34D399', '#EF4444']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
             }
         });
     </script>
