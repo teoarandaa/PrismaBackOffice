@@ -320,10 +320,8 @@
         function eliminarProyecto(proyectoId, clienteId) {
             if (confirm('¿Estás seguro de que deseas eliminar este proyecto?')) {
                 const token = document.querySelector('meta[name="csrf-token"]').content;
-                console.log('Intentando eliminar proyecto:', proyectoId);
-                console.log('Token CSRF:', token);
 
-                fetch(`/proyectos/${proyectoId}`, {
+                fetch(`/clientes/${clienteId}/proyectos/${proyectoId}`, {
                     method: 'DELETE',
                     headers: {
                         'X-CSRF-TOKEN': token,
@@ -332,7 +330,6 @@
                     }
                 })
                 .then(response => {
-                    console.log('Respuesta status:', response.status);
                     if (!response.ok) {
                         return response.text().then(text => {
                             console.error('Error response:', text);
@@ -347,8 +344,6 @@
                     const fila = document.querySelector(`tr[data-proyecto-id="${proyectoId}"]`);
                     if (fila) {
                         fila.remove();
-                    } else {
-                        console.log('No se encontró la fila a eliminar');
                     }
                 })
                 .catch(error => {
