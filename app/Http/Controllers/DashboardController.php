@@ -241,13 +241,13 @@ class DashboardController extends Controller
                     ->where('estado', 'Completado')
                     ->whereBetween('updated_at', [$periodo['inicio'], $periodo['fin']])
                     ->whereNotNull('fecha_inicio')
-                    ->selectRaw('ROUND(AVG(DATEDIFF(updated_at, fecha_inicio)), 0) as promedio')
+                    ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as promedio')
                     ->value('promedio') ?? 0;
             } else {
                 $tiempoPromedio = (clone $query)
                     ->where('estado', 'Completado')
                     ->whereNotNull('fecha_inicio')
-                    ->selectRaw('ROUND(AVG(DATEDIFF(updated_at, fecha_inicio)), 0) as promedio')
+                    ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as promedio')
                     ->value('promedio') ?? 0;
             }
 

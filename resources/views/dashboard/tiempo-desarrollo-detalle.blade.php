@@ -42,7 +42,7 @@
             <!-- Tiempo Medio General -->
             <div class="mb-8 bg-purple-50 p-6 rounded-lg">
                 <h2 class="text-2xl font-bold text-purple-800 mb-2">Tiempo Medio General</h2>
-                <p class="text-4xl font-bold text-purple-600">{{ (int)$proyectos['promedio_general'] }} días</p>
+                <p class="text-4xl font-bold text-purple-600">{{ number_format($proyectos['promedio_general'], 2, ',', '.') }} días</p>
                 <p class="text-sm text-purple-600">Promedio de todos los proyectos completados</p>
             </div>
 
@@ -62,7 +62,7 @@
                             @foreach($proyectos['por_tipo'] as $tipo)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap capitalize">{{ $tipo->tipo }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ (int)$tipo->promedio_dias }} días</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ number_format($tipo->promedio_dias, 2, ',', '.') }} días</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $tipo->total_proyectos }}</td>
                             </tr>
                             @endforeach

@@ -69,7 +69,7 @@
                                 <h3 class="text-lg font-semibold text-purple-800 mb-3">Tiempo Promedio</h3>
                                 <div class="flex items-center justify-center h-24">
                                     <span class="text-4xl font-bold text-purple-600">
-                                        {{ $stats['tiempo_promedio'] ? number_format($stats['tiempo_promedio'], 0) : 'N/A' }}
+                                        {{ $stats['tiempo_promedio'] ? number_format($stats['tiempo_promedio'], 2, ',', '.') : 'N/A' }}
                                         <span class="text-lg">días</span>
                                     </span>
                                 </div>
