@@ -20,64 +20,108 @@
 
             <div class="bg-white shadow-md rounded-lg overflow-hidden">
                 <div class="p-6">
-                    <div class="mb-6">
-                        <h2 class="text-xl font-semibold text-gray-800">
-                            {{ $cliente->nombre }} {{ $cliente->apellido }}
-                        </h2>
-                        @if($cliente->empresa)
-                            <p class="text-gray-600 mt-1">{{ $cliente->empresa }}</p>
-                        @endif
+                    <!-- Encabezado del Cliente -->
+                    <div class="mb-8">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="bg-blue-100 rounded-full p-3">
+                                <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-800">
+                                    {{ $cliente->nombre }} {{ $cliente->apellido }}
+                                </h2>
+                                @if($cliente->empresa)
+                                    <p class="text-gray-600 flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                        </svg>
+                                        {{ $cliente->empresa }}
+                                    </p>
+                                @endif
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-500">Información de Contacto</h3>
-                            <div class="mt-2 space-y-2">
-                                <p class="text-gray-800">
-                                    <span class="font-medium">Email:</span> 
-                                    <a href="mailto:{{ $cliente->email }}" class="text-blue-600 hover:text-blue-800">
+                    <!-- Información de Contacto y Ubicación -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                                Información de Contacto
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-gray-600">Email:</span>
+                                    <a href="mailto:{{ $cliente->email }}" 
+                                       class="text-blue-600 hover:text-blue-800 hover:underline">
                                         {{ $cliente->email }}
                                     </a>
-                                </p>
+                                </div>
                                 @if($cliente->telefono)
-                                    <p class="text-gray-800">
-                                        <span class="font-medium">Teléfono:</span> 
-                                        <a href="tel:{{ $cliente->telefono }}" class="text-blue-600 hover:text-blue-800">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-gray-600">Teléfono:</span>
+                                        <a href="tel:{{ $cliente->telefono }}" 
+                                           class="text-blue-600 hover:text-blue-800 hover:underline">
                                             {{ $cliente->telefono }}
                                         </a>
-                                    </p>
+                                    </div>
                                 @endif
                             </div>
                         </div>
 
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-500">Ubicación</h3>
-                            <div class="mt-2 space-y-2">
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                Ubicación
+                            </h3>
+                            <div class="space-y-3">
                                 @if($cliente->ciudad)
-                                    <p class="text-gray-800">
-                                        <span class="font-medium">Ciudad:</span> {{ $cliente->ciudad }}
-                                    </p>
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-gray-600">Ciudad:</span>
+                                        <span class="text-gray-800">{{ $cliente->ciudad }}</span>
+                                    </div>
                                 @endif
                                 @if($cliente->codigo_postal)
-                                    <p class="text-gray-800">
-                                        <span class="font-medium">Código Postal:</span> {{ $cliente->codigo_postal }}
-                                    </p>
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-gray-600">Código Postal:</span>
+                                        <span class="text-gray-800">{{ $cliente->codigo_postal }}</span>
+                                    </div>
                                 @endif
                                 @if($cliente->pais)
-                                    <p class="text-gray-800">
-                                        <span class="font-medium">País:</span> {{ $cliente->pais }}
-                                    </p>
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-gray-600">País:</span>
+                                        <span class="text-gray-800">{{ $cliente->pais }}</span>
+                                    </div>
                                 @endif
                             </div>
                         </div>
                     </div>
 
-                    <div class="mt-6 pt-6 border-t">
-                        <h3 class="text-sm font-medium text-gray-500 mb-4">Proyectos Asociados</h3>
+                    <!-- Proyectos Asociados -->
+                    <div class="border-t pt-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                            </svg>
+                            Proyectos Asociados
+                        </h3>
                         @if($cliente->proyectos->count() > 0)
-                            <div class="space-y-4">
-                                @foreach($cliente->proyectos as $proyecto)
-                                    <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                            <div class="space-y-3">
+                                @foreach($cliente->proyectos->take(5) as $proyecto)
+                                    <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
                                         <div>
                                             <h4 class="font-medium text-gray-800">{{ $proyecto->nombre_proyecto }}</h4>
                                             <p class="text-sm text-gray-600">
@@ -91,28 +135,41 @@
                                         </div>
                                         <a href="{{ route('clientes.proyectos.show', [$cliente, $proyecto]) }}" 
                                            class="text-blue-600 hover:text-blue-800">
-                                            Ver Detalles
+                                            Ver Detalles →
                                         </a>
                                     </div>
                                 @endforeach
                             </div>
+                            
+                            @if($cliente->proyectos->count() > 5)
+                                <div class="mt-4 text-center">
+                                    <a href="{{ route('clientes.proyectos.index', $cliente) }}" 
+                                       class="inline-flex items-center text-gray-600 hover:text-gray-900 text-sm font-medium">
+                                        Ver todos los proyectos ({{ $cliente->proyectos->count() }})
+                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                        </svg>
+                                    </a>
+                                </div>
+                            @endif
                         @else
                             <p class="text-gray-600">No hay proyectos asociados a este cliente.</p>
                         @endif
                     </div>
 
-                    <div class="mt-6 pt-6 border-t flex justify-end space-x-4">
+                    <!-- Botones de Acción -->
+                    <div class="mt-8 pt-6 border-t flex justify-center gap-4">
                         <button onclick="window.location.href='{{ route('clientes.proyectos.index', $cliente) }}'"
-                                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-200">
                             Ver Todos los Proyectos
                         </button>
                         @if(auth()->user()->can_edit || auth()->user()->is_admin)
                             <button onclick="window.location.href='{{ route('clientes.edit', $cliente) }}'"
-                                    class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
+                                    class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-200">
                                 Editar Cliente
                             </button>
                             <button onclick="eliminarCliente()"
-                                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-200">
                                 Eliminar Cliente
                             </button>
                         @endif
