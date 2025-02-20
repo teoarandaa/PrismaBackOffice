@@ -354,7 +354,7 @@ class DashboardController extends Controller
         // Consultas base para cada tipo de proyecto
         $query = [
             'completados' => Proyecto::with('cliente')->where('estado', 'Completado'),
-            'en_progreso' => Proyecto::with('cliente')->where('estado', 'En Desarrollo'),
+            'en_progreso' => Proyecto::with('cliente')->where('estado', 'En progreso'),
             'cancelados' => Proyecto::with('cliente')->where('estado', 'Cancelado')
         ];
 

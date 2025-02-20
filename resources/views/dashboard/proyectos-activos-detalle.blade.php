@@ -182,7 +182,7 @@
             <!-- Proyectos En Desarrollo -->
             <div class="mb-16">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold text-blue-600">En Desarrollo ({{ $proyectos['en_progreso']->total() }})</h2>
+                    <h2 class="text-2xl font-bold text-blue-600">En Progreso ({{ $proyectos['en_progreso']->total() }})</h2>
                     <button onclick="toggleFiltros('en_progreso')" 
                             class="bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-2 px-4 rounded inline-flex items-center">
                         <span>Filtros</span>
