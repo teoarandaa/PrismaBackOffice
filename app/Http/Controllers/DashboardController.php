@@ -121,19 +121,17 @@ class DashboardController extends Controller
 
     public function topClientesDetalle()
     {
-        $clientes = Cliente::withCount('proyectos as total_proyectos')
-            ->withSum('proyectos', 'presupuesto')
-            ->withAvg('proyectos', 'presupuesto')
-            ->with(['proyectos' => function($query) {
-                $query->select('id', 'id_cliente', 'nombre_proyecto', 'tipo', 'estado', 'presupuesto')
-                      ->orderBy('created_at', 'desc')
-                      ->take(5);
-            }])
-            ->having('total_proyectos', '>', 0)
-            ->orderBy('total_proyectos', 'desc')
-            ->orderBy('proyectos_sum_presupuesto', 'desc')
-            ->take(10)
-            ->get();
+        $clientes = Cliente::with(['proyectos' => function($query) {
+            $query->orderBy('created_at', 'desc');
+        }])
+        ->withCount('proyectos as total_proyectos')
+        ->withSum('proyectos as proyectos_sum_presupuesto', 'presupuesto')
+        ->withAvg('proyectos as proyectos_avg_presupuesto', 'presupuesto')
+        ->orderByDesc('proyectos_sum_presupuesto')
+        ->get();
+
+        // La ordenación por presupuesto se hace en la vista para mantener
+        // la colección original de proyectos intacta para cada cliente
 
         return view('dashboard.top-clientes-detalle', compact('clientes'));
     }
