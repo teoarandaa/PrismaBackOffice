@@ -7,6 +7,7 @@ use App\Http\Controllers\DataController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ImportController;
 
 // Rutas de autenticación
 Route::middleware('guest')->group(function () {
@@ -56,7 +57,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/clientes/{cliente}/proyectos/{proyecto}', [ProyectoController::class, 'destroy'])
             ->name('clientes.proyectos.destroy');
         
-        Route::post('/importar', [DataController::class, 'importar'])->name('importar');
+        Route::get('/importar', [ImportController::class, 'showForm'])->name('importar.form');
+        Route::post('/importar', [ImportController::class, 'import'])->name('importar');
     });
 
     // Rutas que requieren permisos de administrador

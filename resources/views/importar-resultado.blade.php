@@ -74,7 +74,7 @@
                                     class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                                 Ir al Listado de Clientes
                             </button>
-                            <button onclick="window.location.reload()"
+                            <button onclick="window.location.href='{{ route('importar.form') }}'"
                                     class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                                 Importar Más Datos
                             </button>
