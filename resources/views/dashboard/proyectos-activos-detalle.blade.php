@@ -56,6 +56,30 @@
                 </button>
             </div>
 
+            <!-- Resumen de Proyectos -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Proyectos Completados -->
+                <div class="bg-green-50 p-6 rounded-lg">
+                    <h2 class="text-2xl font-bold text-green-800 mb-2">Completados</h2>
+                    <p class="text-4xl font-bold text-green-600">{{ $proyectos['completados']->total() }}</p>
+                    <p class="text-sm text-green-600">Total de proyectos completados</p>
+                </div>
+
+                <!-- Proyectos En Desarrollo -->
+                <div class="bg-blue-50 p-6 rounded-lg">
+                    <h2 class="text-2xl font-bold text-blue-800 mb-2">En Desarrollo</h2>
+                    <p class="text-4xl font-bold text-blue-600">{{ $proyectos['en_progreso']->total() }}</p>
+                    <p class="text-sm text-blue-600">Total de proyectos en desarrollo</p>
+                </div>
+
+                <!-- Proyectos Cancelados -->
+                <div class="bg-red-50 p-6 rounded-lg">
+                    <h2 class="text-2xl font-bold text-red-800 mb-2">Cancelados</h2>
+                    <p class="text-4xl font-bold text-red-600">{{ $proyectos['cancelados']->total() }}</p>
+                    <p class="text-sm text-red-600">Total de proyectos cancelados</p>
+                </div>
+            </div>
+
             <!-- Proyectos Completados -->
             <div class="mb-16">
                 <div class="flex justify-between items-center mb-4">
