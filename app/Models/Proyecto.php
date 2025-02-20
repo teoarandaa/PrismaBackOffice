@@ -18,7 +18,12 @@ class Proyecto extends Model
         'estado',
         'tipo',
         'link',
-        'id_cliente'
+        'id_cliente',
+        'fecha_completado',
+    ];
+
+    protected $dates = [
+        'fecha_completado',
     ];
 
     protected $table = 'proyectos';

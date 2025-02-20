@@ -124,6 +124,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Inicio</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Fin</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Presupuesto</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Completado</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                     </tr>
                 </thead>
@@ -153,6 +154,13 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {{ number_format($proyecto->presupuesto, 2, ',', '.') }} €
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($proyecto->estado === 'Completado')
+                                {{ $proyecto->fecha_completado ? date('d/m/Y', strtotime($proyecto->fecha_completado)) : '-' }}
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex justify-end space-x-2">

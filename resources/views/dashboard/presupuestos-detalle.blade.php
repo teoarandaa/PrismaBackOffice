@@ -43,7 +43,13 @@
                             </div>
                             <div class="bg-blue-50 p-4 rounded-lg">
                                 <h3 class="text-sm text-blue-600">Tasa de Éxito</h3>
-                                <p class="text-2xl font-bold text-gray-800">{{ number_format(($estadisticas['apps']['completados'] / $estadisticas['apps']['total']) * 100, 1) }}%</p>
+                                <p class="text-2xl font-bold text-gray-800">
+                                    @if($estadisticas['apps']['total'] > 0)
+                                        {{ number_format(($estadisticas['apps']['completados'] / $estadisticas['apps']['total']) * 100, 1) }}%
+                                    @else
+                                        0,0%
+                                    @endif
+                                </p>
                             </div>
                         </div>
 
@@ -111,7 +117,13 @@
                             </div>
                             <div class="bg-green-50 p-4 rounded-lg">
                                 <h3 class="text-sm text-green-600">Tasa de Éxito</h3>
-                                <p class="text-2xl font-bold text-gray-800">{{ number_format(($estadisticas['webs']['completados'] / $estadisticas['webs']['total']) * 100, 1) }}%</p>
+                                <p class="text-2xl font-bold text-gray-800">
+                                    @if($estadisticas['webs']['total'] > 0)
+                                        {{ number_format(($estadisticas['webs']['completados'] / $estadisticas['webs']['total']) * 100, 1) }}%
+                                    @else
+                                        0,0%
+                                    @endif
+                                </p>
                             </div>
                         </div>
 

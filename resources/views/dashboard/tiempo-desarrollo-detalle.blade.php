@@ -198,9 +198,9 @@
                             <td class="px-6 py-4 whitespace-nowrap">{{ $proyecto->fecha_finalizacion }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($proyecto->estado === 'Completado')
-                                    {{ $proyecto->updated_at->format('Y-m-d H:i:s') }}
+                                    {{ $proyecto->fecha_completado ? date('d/m/Y', strtotime($proyecto->fecha_completado)) : '-' }}
                                 @else
-                                    <span class="text-gray-500">-</span>
+                                    <span class="text-gray-400">-</span>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">{{ $proyecto->dias_desarrollo }} días</td>

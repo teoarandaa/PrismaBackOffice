@@ -162,7 +162,13 @@
                                 <td class="col-tipo px-6 py-4 whitespace-nowrap capitalize">{{ $proyecto->tipo }}</td>
                                 <td class="col-inicio px-6 py-4 whitespace-nowrap">{{ $proyecto->fecha_inicio }}</td>
                                 <td class="col-fin px-6 py-4 whitespace-nowrap">{{ $proyecto->fecha_finalizacion }}</td>
-                                <td class="col-fecha px-6 py-4 whitespace-nowrap">{{ $proyecto->updated_at }}</td>
+                                <td class="col-fecha px-6 py-4 whitespace-nowrap">
+                                    @if($proyecto->estado === 'Completado')
+                                        {{ $proyecto->fecha_completado ? date('d/m/Y', strtotime($proyecto->fecha_completado)) : '-' }}
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -341,7 +347,13 @@
                                 <td class="col-tipo px-6 py-4 whitespace-nowrap capitalize">{{ $proyecto->tipo }}</td>
                                 <td class="col-inicio px-6 py-4 whitespace-nowrap">{{ $proyecto->fecha_inicio }}</td>
                                 <td class="col-fin px-6 py-4 whitespace-nowrap">{{ $proyecto->fecha_finalizacion }}</td>
-                                <td class="col-fecha px-6 py-4 whitespace-nowrap">{{ $proyecto->updated_at }}</td>
+                                <td class="col-fecha px-6 py-4 whitespace-nowrap">
+                                    @if($proyecto->estado === 'Completado')
+                                        {{ $proyecto->fecha_completado ? date('d/m/Y', strtotime($proyecto->fecha_completado)) : '-' }}
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>

@@ -216,8 +216,6 @@ class DataController extends Controller
             throw new \Exception("El cliente con ID {$datos['ID Cliente']} no existe");
         }
 
-        $existe = Proyecto::where('id', $datos['ID'])->exists();
-        
         $proyecto = Proyecto::updateOrCreate(
             ['id' => $datos['ID']],
             [
@@ -232,13 +230,23 @@ class DataController extends Controller
             ]
         );
 
-        // Si el proyecto está completado y tiene fecha de completado, actualizar updated_at
-        if ($proyecto->estado === 'Completado' && !empty($datos['Fecha Completado'])) {
-            $proyecto->updated_at = $datos['Fecha Completado'];
+        // Actualizar fecha_completado si el estado es Completado
+        if ($datos['Estado'] === 'Completado') {
+            if (!empty($datos['Fecha Completado'])) {
+                $proyecto->fecha_completado = $datos['Fecha Completado'];
+            } else {
+                // Si no hay fecha de completado en el CSV pero el estado es Completado,
+                // usar la fecha actual
+                $proyecto->fecha_completado = now();
+            }
+            $proyecto->save();
+        } elseif ($datos['Estado'] !== 'Completado' && $proyecto->fecha_completado !== null) {
+            // Si el estado no es Completado, asegurarse de que fecha_completado sea null
+            $proyecto->fecha_completado = null;
             $proyecto->save();
         }
 
-        return $existe ? 'actualizados' : 'nuevos';
+        return $proyecto->wasRecentlyCreated ? 'nuevos' : 'actualizados';
     }
     
     private function procesarUsuario($datos)

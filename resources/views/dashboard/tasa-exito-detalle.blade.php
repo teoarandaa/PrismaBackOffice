@@ -177,7 +177,13 @@
                                         {{ $proyecto->estado }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $proyecto->updated_at }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($proyecto->estado === 'Completado')
+                                        {{ $proyecto->fecha_completado ? date('d/m/Y', strtotime($proyecto->fecha_completado)) : '-' }}
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>

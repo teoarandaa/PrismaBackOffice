@@ -33,9 +33,9 @@ class DashboardController extends Controller
 
         // Tiempo medio de desarrollo
         $tiempoMedioDesarrollo = round(Proyecto::whereNotNull('fecha_inicio')
-            ->whereNotNull('updated_at')
+            ->whereNotNull('fecha_completado')
             ->where('estado', 'Completado')
-            ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as promedio')
+            ->selectRaw('AVG(DATEDIFF(fecha_completado, fecha_inicio)) as promedio')
             ->value('promedio') ?? 0);
 
         // Estadísticas por tipo
@@ -112,9 +112,9 @@ class DashboardController extends Controller
                     $tendencias['ingresos'][] = $datosDelDia->sum('presupuesto');
                     
                     $tiempoMedio = $datosDelDia->whereNotNull('fecha_inicio')
-                        ->whereNotNull('updated_at')
+                        ->whereNotNull('fecha_completado')
                         ->where('estado', 'Completado')
-                        ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as tiempo_medio')
+                        ->selectRaw('AVG(DATEDIFF(fecha_completado, fecha_inicio)) as tiempo_medio')
                         ->value('tiempo_medio') ?? 0;
                     $tendencias['tiempos'][] = round($tiempoMedio, 1);
                     
@@ -137,9 +137,9 @@ class DashboardController extends Controller
                     $tendencias['ingresos'][] = $datosSemana->sum('presupuesto');
                     
                     $tiempoMedio = $datosSemana->whereNotNull('fecha_inicio')
-                        ->whereNotNull('updated_at')
+                        ->whereNotNull('fecha_completado')
                         ->where('estado', 'Completado')
-                        ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as tiempo_medio')
+                        ->selectRaw('AVG(DATEDIFF(fecha_completado, fecha_inicio)) as tiempo_medio')
                         ->value('tiempo_medio') ?? 0;
                     $tendencias['tiempos'][] = round($tiempoMedio, 1);
                     
@@ -160,9 +160,9 @@ class DashboardController extends Controller
                     $tendencias['ingresos'][] = $datosMes->sum('presupuesto');
                     
                     $tiempoMedio = $datosMes->whereNotNull('fecha_inicio')
-                        ->whereNotNull('updated_at')
+                        ->whereNotNull('fecha_completado')
                         ->where('estado', 'Completado')
-                        ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as tiempo_medio')
+                        ->selectRaw('AVG(DATEDIFF(fecha_completado, fecha_inicio)) as tiempo_medio')
                         ->value('tiempo_medio') ?? 0;
                     $tendencias['tiempos'][] = round($tiempoMedio, 1);
                     
@@ -186,9 +186,9 @@ class DashboardController extends Controller
                         $tendencias['ingresos'][] = $datosAño->sum('presupuesto');
                         
                         $tiempoMedio = $datosAño->whereNotNull('fecha_inicio')
-                            ->whereNotNull('updated_at')
+                            ->whereNotNull('fecha_completado')
                             ->where('estado', 'Completado')
-                            ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as tiempo_medio')
+                            ->selectRaw('AVG(DATEDIFF(fecha_completado, fecha_inicio)) as tiempo_medio')
                             ->value('tiempo_medio') ?? 0;
                         $tendencias['tiempos'][] = round($tiempoMedio, 1);
                         
@@ -224,18 +224,18 @@ class DashboardController extends Controller
     {
         $estadisticas = [
             'apps' => [
-                'promedio' => Proyecto::where('tipo', 'app')->avg('presupuesto'),
-                'maximo' => Proyecto::where('tipo', 'app')->max('presupuesto'),
-                'minimo' => Proyecto::where('tipo', 'app')->min('presupuesto'),
-                'completados' => Proyecto::where('tipo', 'app')->where('estado', 'Completado')->count(),
-                'total' => Proyecto::where('tipo', 'app')->count(),
+                'total' => Proyecto::where('tipo', 'App')->count(),
+                'completados' => Proyecto::where('tipo', 'App')->where('estado', 'Completado')->count(),
+                'promedio' => Proyecto::where('tipo', 'App')->avg('presupuesto') ?? 0,
+                'maximo' => Proyecto::where('tipo', 'App')->max('presupuesto') ?? 0,
+                'minimo' => Proyecto::where('tipo', 'App')->min('presupuesto') ?? 0,
             ],
             'webs' => [
-                'promedio' => Proyecto::where('tipo', 'web')->avg('presupuesto'),
-                'maximo' => Proyecto::where('tipo', 'web')->max('presupuesto'),
-                'minimo' => Proyecto::where('tipo', 'web')->min('presupuesto'),
-                'completados' => Proyecto::where('tipo', 'web')->where('estado', 'Completado')->count(),
-                'total' => Proyecto::where('tipo', 'web')->count(),
+                'total' => Proyecto::where('tipo', 'Web')->count(),
+                'completados' => Proyecto::where('tipo', 'Web')->where('estado', 'Completado')->count(),
+                'promedio' => Proyecto::where('tipo', 'Web')->avg('presupuesto') ?? 0,
+                'maximo' => Proyecto::where('tipo', 'Web')->max('presupuesto') ?? 0,
+                'minimo' => Proyecto::where('tipo', 'Web')->min('presupuesto') ?? 0,
             ],
         ];
 
@@ -243,10 +243,10 @@ class DashboardController extends Controller
         $ordenWebs = $request->input('orden_webs', 'desc');
 
         $ultimosProyectos = [
-            'apps' => Proyecto::where('tipo', 'app')
+            'apps' => Proyecto::where('tipo', 'App')
                              ->orderBy('presupuesto', $ordenApps)
                              ->paginate(10, ['*'], 'pagina_apps'),
-            'webs' => Proyecto::where('tipo', 'web')
+            'webs' => Proyecto::where('tipo', 'Web')
                              ->orderBy('presupuesto', $ordenWebs)
                              ->paginate(10, ['*'], 'pagina_webs'),
         ];
@@ -298,13 +298,13 @@ class DashboardController extends Controller
                 // Proyectos completados en este período (por fecha en que se marcaron como completados)
                 $completados = (clone $query)
                     ->where('estado', 'Completado')
-                    ->whereBetween('updated_at', [$periodo['inicio'], $periodo['fin']])
+                    ->whereBetween('fecha_completado', [$periodo['inicio'], $periodo['fin']])
                     ->count();
 
                 // Proyectos cancelados en este período (por fecha en que se marcaron como cancelados)
                 $cancelados = (clone $query)
                     ->where('estado', 'Cancelado')
-                    ->whereBetween('updated_at', [$periodo['inicio'], $periodo['fin']])
+                    ->whereBetween('fecha_completado', [$periodo['inicio'], $periodo['fin']])
                     ->count();
 
                 // Proyectos en progreso actualmente
@@ -323,15 +323,15 @@ class DashboardController extends Controller
             if ($periodo['inicio'] && $periodo['fin']) {
                 $tiempoPromedio = (clone $query)
                     ->where('estado', 'Completado')
-                    ->whereBetween('updated_at', [$periodo['inicio'], $periodo['fin']])
+                    ->whereBetween('fecha_completado', [$periodo['inicio'], $periodo['fin']])
                     ->whereNotNull('fecha_inicio')
-                    ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as promedio')
+                    ->selectRaw('AVG(DATEDIFF(fecha_completado, fecha_inicio)) as promedio')
                     ->value('promedio') ?? 0;
             } else {
                 $tiempoPromedio = (clone $query)
                     ->where('estado', 'Completado')
                     ->whereNotNull('fecha_inicio')
-                    ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as promedio')
+                    ->selectRaw('AVG(DATEDIFF(fecha_completado, fecha_inicio)) as promedio')
                     ->value('promedio') ?? 0;
             }
 
@@ -412,11 +412,10 @@ class DashboardController extends Controller
             if ($tipo === 'completados' && $request->filled('completados_completado')) {
                 $queryBuilder->where(function($q) use ($request) {
                     if ($request->filled('completados_inicio')) {
-                        // Incluir las fechas límite en el rango
-                        $q->whereDate('updated_at', '>=', $request->completados_inicio)
-                          ->whereDate('updated_at', '<=', $request->completados_completado);
+                        $q->whereDate('fecha_completado', '>=', $request->completados_inicio)
+                          ->whereDate('fecha_completado', '<=', $request->completados_completado);
                     } else {
-                        $q->whereDate('updated_at', '<=', $request->completados_completado);
+                        $q->whereDate('fecha_completado', '<=', $request->completados_completado);
                     }
                 });
             }
@@ -486,7 +485,7 @@ class DashboardController extends Controller
 
         // Obtener años únicos de los proyectos completados
         $años_disponibles = Proyecto::where('estado', 'Completado')
-            ->selectRaw('YEAR(updated_at) as año')
+            ->selectRaw('YEAR(fecha_completado) as año')
             ->distinct()
             ->orderBy('año', 'desc')
             ->pluck('año')
@@ -547,19 +546,19 @@ class DashboardController extends Controller
         // Filtro por fecha de completado
         if ($request->filled('fecha_completado')) {
             $query->where('estado', 'Completado')
-                  ->whereDate('updated_at', '<=', $request->fecha_completado);
+                  ->whereDate('fecha_completado', '<=', $request->fecha_completado);
         }
 
         if ($request->filled('duracion_min')) {
-            $query->whereRaw('DATEDIFF(CASE WHEN estado = "Completado" THEN updated_at ELSE CURRENT_TIMESTAMP END, fecha_inicio) >= ?', [$request->duracion_min]);
+            $query->whereRaw('DATEDIFF(CASE WHEN estado = "Completado" THEN fecha_completado ELSE CURRENT_TIMESTAMP END, fecha_inicio) >= ?', [$request->duracion_min]);
         }
         if ($request->filled('duracion_max')) {
-            $query->whereRaw('DATEDIFF(CASE WHEN estado = "Completado" THEN updated_at ELSE CURRENT_TIMESTAMP END, fecha_inicio) <= ?', [$request->duracion_max]);
+            $query->whereRaw('DATEDIFF(CASE WHEN estado = "Completado" THEN fecha_completado ELSE CURRENT_TIMESTAMP END, fecha_inicio) <= ?', [$request->duracion_max]);
         }
 
         // Ordenar por tiempo de desarrollo
         $ordenTiempo = $request->get('orden', 'desc');
-        $query->orderByRaw('DATEDIFF(CASE WHEN estado = "Completado" THEN updated_at ELSE CURRENT_TIMESTAMP END, fecha_inicio) ' . $ordenTiempo);
+        $query->orderByRaw('DATEDIFF(CASE WHEN estado = "Completado" THEN fecha_completado ELSE CURRENT_TIMESTAMP END, fecha_inicio) ' . $ordenTiempo);
 
         $proyectos = $query->paginate(10);
 
@@ -567,7 +566,7 @@ class DashboardController extends Controller
         foreach ($proyectos as $proyecto) {
             $fechaInicio = Carbon::parse($proyecto->fecha_inicio);
             $fechaFin = $proyecto->estado === 'Completado' 
-                ? Carbon::parse($proyecto->updated_at)
+                ? Carbon::parse($proyecto->fecha_completado)
                 : now();
             $proyecto->dias_desarrollo = number_format($fechaInicio->diffInDays($fechaFin), 2);
         }
@@ -575,7 +574,7 @@ class DashboardController extends Controller
         // Calcular promedio general
         $promedio_general = number_format(Proyecto::whereNotNull('fecha_inicio')
             ->where('estado', 'Completado')
-            ->selectRaw('AVG(DATEDIFF(updated_at, fecha_inicio)) as promedio_dias')
+            ->selectRaw('AVG(DATEDIFF(fecha_completado, fecha_inicio)) as promedio_dias')
             ->first()
             ->promedio_dias, 2);
 
@@ -583,7 +582,7 @@ class DashboardController extends Controller
         $por_tipo = Proyecto::whereNotNull('fecha_inicio')
             ->where('estado', 'Completado')
             ->selectRaw('tipo, 
-                        ROUND(AVG(DATEDIFF(updated_at, fecha_inicio)), 2) as promedio_dias,
+                        ROUND(AVG(DATEDIFF(fecha_completado, fecha_inicio)), 2) as promedio_dias,
                         COUNT(*) as total_proyectos')
             ->groupBy('tipo')
             ->get();
@@ -621,7 +620,7 @@ class DashboardController extends Controller
         }
 
         if ($request->filled('fecha_fin')) {
-            $queryProyectos->whereDate('updated_at', $request->fecha_fin);
+            $queryProyectos->whereDate('fecha_completado', $request->fecha_fin);
         }
 
         // Preparar estadísticas
@@ -641,7 +640,7 @@ class DashboardController extends Controller
                     'completados' => Proyecto::where('tipo', 'web')->where('estado', 'Completado')->count(),
                 ]
             ],
-            'proyectos' => $queryProyectos->orderBy('updated_at', 'desc')->paginate(10)
+            'proyectos' => $queryProyectos->orderBy('fecha_completado', 'desc')->paginate(10)
         ];
 
         // Calcular tasas de éxito por tipo
@@ -711,8 +710,8 @@ class DashboardController extends Controller
     public function ingresosPorMes($mes, $año)
     {
         $proyectos = Proyecto::with('cliente')
-            ->whereMonth('updated_at', $mes)
-            ->whereYear('updated_at', $año)
+            ->whereMonth('fecha_completado', $mes)
+            ->whereYear('fecha_completado', $año)
             ->where('estado', 'Completado')
             ->get();
 

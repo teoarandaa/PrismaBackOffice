@@ -242,11 +242,23 @@
                     <div class="space-y-2 cursor-pointer" onclick="window.location.href='{{ route('dashboard.presupuestos') }}'">
                         <div class="flex justify-between hover:bg-gray-50 p-2 rounded">
                             <span>Apps</span>
-                            <span class="font-semibold">{{ number_format($presupuestoPromedioApps, 2, ',', '.') }}€</span>
+                            <span class="font-semibold">
+                                @if($totalApps > 0)
+                                    {{ number_format($presupuestoPromedioApps, 2, ',', '.') }}€
+                                @else
+                                    0,00€
+                                @endif
+                            </span>
                         </div>
                         <div class="flex justify-between hover:bg-gray-50 p-2 rounded">
                             <span>Webs</span>
-                            <span class="font-semibold">{{ number_format($presupuestoPromedioWebs, 2, ',', '.') }}€</span>
+                            <span class="font-semibold">
+                                @if($totalWebs > 0)
+                                    {{ number_format($presupuestoPromedioWebs, 2, ',', '.') }}€
+                                @else
+                                    0,00€
+                                @endif
+                            </span>
                         </div>
                     </div>
                 </div>
