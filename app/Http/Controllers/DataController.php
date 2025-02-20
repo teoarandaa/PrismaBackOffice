@@ -38,24 +38,23 @@ class DataController extends Controller
         }
         
         $csvContent .= "\nPROYECTOS\n";
-        $csvContent .= "ID,ID Cliente,Nombre,Descripción,Fecha Inicio,Fecha Finalización,Estado,Presupuesto,Link,Fecha Completado\n";
+        $csvContent .= "ID,ID Cliente,Nombre,Descripción,Tipo,Fecha Inicio,Fecha Finalización,Estado,Presupuesto,Link,Fecha Completado\n";
         
-        $proyectos = Proyecto::all();
+        $proyectos = Proyecto::with('cliente')->get();
         foreach ($proyectos as $proyecto) {
-            $fechaCompletado = ($proyecto->estado === 'Completado') ? $proyecto->updated_at : '';
-            
             $csvContent .= sprintf(
-                "%d,%d,%s,%s,%s,%s,%s,%.2f,%s,%s\n",
+                "%d,%d,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
                 $proyecto->id,
                 $proyecto->id_cliente,
                 $this->escapeCsvField($proyecto->nombre_proyecto),
                 $this->escapeCsvField($proyecto->descripcion),
+                $this->escapeCsvField($proyecto->tipo),
                 $proyecto->fecha_inicio,
                 $proyecto->fecha_finalizacion,
                 $this->escapeCsvField($proyecto->estado),
                 $proyecto->presupuesto,
                 $this->escapeCsvField($proyecto->link),
-                $fechaCompletado
+                $proyecto->fecha_completado
             );
         }
         
@@ -222,6 +221,7 @@ class DataController extends Controller
                 'id_cliente' => $datos['ID Cliente'],
                 'nombre_proyecto' => $datos['Nombre'],
                 'descripcion' => $datos['Descripción'] ?? '',
+                'tipo' => $datos['Tipo'] ?? 'Web',
                 'fecha_inicio' => $datos['Fecha Inicio'] ?? null,
                 'fecha_finalizacion' => $datos['Fecha Finalización'] ?? null,
                 'estado' => $datos['Estado'] ?? 'En progreso',
