@@ -9,8 +9,19 @@
         nav[role="navigation"] {
             color: white !important;
         }
-        [aria-current="page"] span {
-            background-color: #3B82F6 !important;
+        /* Paginación para Completados */
+        #completados-pagination [aria-current="page"] span {
+            background-color: #16A34A !important; /* green-600 */
+            color: white !important;
+        }
+        /* Paginación para En Desarrollo */
+        #en-progreso-pagination [aria-current="page"] span {
+            background-color: #3B82F6 !important; /* blue-600 */
+            color: white !important;
+        }
+        /* Paginación para Cancelados */
+        #cancelados-pagination [aria-current="page"] span {
+            background-color: #DC2626 !important; /* red-600 */
             color: white !important;
         }
         .filtros {
@@ -133,7 +144,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="mt-4">
+                <div class="mt-4" id="completados-pagination">
                     {{ $proyectos['completados']->links() }}
                 </div>
             </div>
@@ -219,7 +230,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="mt-4">
+                <div class="mt-4" id="en-progreso-pagination">
                     {{ $proyectos['en_progreso']->links() }}
                 </div>
             </div>
@@ -312,7 +323,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="mt-4">
+                <div class="mt-4" id="cancelados-pagination">
                     {{ $proyectos['cancelados']->links() }}
                 </div>
             </div>

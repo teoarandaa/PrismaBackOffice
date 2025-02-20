@@ -212,6 +212,14 @@
         .filtros.active {
             display: block;
         }
+        /* Estilos para la paginación */
+        nav[role="navigation"] {
+            color: white !important;
+        }
+        [aria-current="page"] span {
+            background-color: #16A34A !important; /* Verde (green-600) */
+            color: white !important;
+        }
     </style>
 
     <script>
