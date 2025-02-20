@@ -75,7 +75,7 @@
                     </table>
                 </div>
                 <div class="mt-4">
-                    {{ $proyectos['por_mes']->links() }}
+                    {{ $proyectos['por_mes']->appends(request()->except('pagina_mes'))->links() }}
                 </div>
             </div>
 
@@ -198,7 +198,7 @@
                     </table>
                 </div>
                 <div class="mt-4">
-                    {{ $proyectos['proyectos']->links() }}
+                    {{ $proyectos['proyectos']->appends(request()->except('pagina_proyectos'))->links() }}
                 </div>
             </div>
         </div>

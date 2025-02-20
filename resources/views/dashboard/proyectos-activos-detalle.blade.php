@@ -46,7 +46,7 @@
             </div>
 
             <!-- Proyectos Completados -->
-            <div>
+            <div class="mb-16">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-bold text-green-600">Completados ({{ $proyectos['completados']->total() }})</h2>
                     <button onclick="toggleFiltros('completados')" 
@@ -139,7 +139,7 @@
             </div>
 
             <!-- Proyectos En Desarrollo -->
-            <div>
+            <div class="mb-16">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-bold text-blue-600">En Desarrollo ({{ $proyectos['en_progreso']->total() }})</h2>
                     <button onclick="toggleFiltros('en_progreso')" 
@@ -225,7 +225,7 @@
             </div>
 
             <!-- Proyectos Cancelados -->
-            <div>
+            <div class="mb-8">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-bold text-red-600">Cancelados ({{ $proyectos['cancelados']->total() }})</h2>
                     <button onclick="toggleFiltros('cancelados')" 

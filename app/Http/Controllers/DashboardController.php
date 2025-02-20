@@ -364,8 +364,10 @@ class DashboardController extends Controller
                 ->groupBy('mes', 'año')
                 ->orderBy('año', 'desc')
                 ->orderBy('mes', 'desc')
-                ->paginate(12),
-            'proyectos' => $queryProyectos->orderBy('presupuesto', $ordenIngresos)->paginate(10)
+                ->paginate(10, ['*'], 'pagina_mes'),
+            'proyectos' => $queryProyectos
+                ->orderBy('presupuesto', $ordenIngresos)
+                ->paginate(10, ['*'], 'pagina_proyectos')
         ];
 
         return view('dashboard.ingresos-detalle', compact('proyectos', 'ordenIngresos'));
