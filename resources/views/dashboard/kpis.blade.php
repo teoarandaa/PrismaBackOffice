@@ -35,6 +35,45 @@
             font-size: 28px;
             cursor: pointer;
         }
+
+        /* Estilos personalizados para los selectores */
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1em;
+            padding-right: 2.5rem;
+        }
+
+        select::-ms-expand {
+            display: none;
+        }
+
+        /* Estilo para el hover del select */
+        select:hover {
+            background-color: #f8fafc;
+        }
+
+        /* Estilo para cuando el select está activo */
+        select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+        /* Estilo para las opciones del select */
+        select option {
+            padding: 0.5rem;
+            background-color: white;
+            color: #374151;
+        }
+
+        select option:hover {
+            background-color: #f3f4f6;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -92,7 +131,8 @@
                 <div class="bg-white p-6 rounded-lg shadow">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold">Distribución de Proyectos</h3>
-                        <select class="text-sm border rounded-md p-1" onchange="actualizarRangoTiempo('tipoProyectos', this.value)">
+                        <select class="bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-lg shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer" 
+                                onchange="actualizarRangoTiempo('tipoProyectos', this.value)">
                             <option value="mes">Último Mes</option>
                             <option value="trimestre">Último Trimestre</option>
                             <option value="anio">Último Año</option>
@@ -107,7 +147,8 @@
                 <div class="bg-white p-6 rounded-lg shadow">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold">Estado de Proyectos</h3>
-                        <select class="text-sm border rounded-md p-1" onchange="actualizarRangoTiempo('estadoProyectos', this.value)">
+                        <select class="bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-lg shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer" 
+                                onchange="actualizarRangoTiempo('estadoProyectos', this.value)">
                             <option value="mes">Último Mes</option>
                             <option value="trimestre">Último Trimestre</option>
                             <option value="anio">Último Año</option>
@@ -124,8 +165,9 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="bg-white p-6 rounded-lg shadow">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold text-green-600">Tendencia de Ingresos</h3>
-                        <select class="text-sm border rounded-md p-1" onchange="actualizarRangoTiempo('ingresosTendencia', this.value)">
+                        <h3 class="text-lg font-semibold text-green-600">Ingresos</h3>
+                        <select class="bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-lg shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer" 
+                                onchange="actualizarRangoTiempo('ingresosTendencia', this.value)">
                             <option value="mes">Último Mes</option>
                             <option value="trimestre">Último Trimestre</option>
                             <option value="anio">Último Año</option>
@@ -139,8 +181,9 @@
 
                 <div class="bg-white p-6 rounded-lg shadow">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold text-purple-600">Tendencia Tiempo de Desarrollo</h3>
-                        <select class="text-sm border rounded-md p-1" onchange="actualizarRangoTiempo('tiempoTendencia', this.value)">
+                        <h3 class="text-lg font-semibold text-purple-600 whitespace-nowrap">Tiempo Desarrollo</h3>
+                        <select class="bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-lg shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer" 
+                                onchange="actualizarRangoTiempo('tiempoTendencia', this.value)">
                             <option value="mes">Último Mes</option>
                             <option value="trimestre">Último Trimestre</option>
                             <option value="anio">Último Año</option>
@@ -154,8 +197,9 @@
 
                 <div class="bg-white p-6 rounded-lg shadow">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold text-yellow-600">Tendencia Tasa de Éxito</h3>
-                        <select class="text-sm border rounded-md p-1" onchange="actualizarRangoTiempo('exitoTendencia', this.value)">
+                        <h3 class="text-lg font-semibold text-yellow-600">Tasa de Éxito</h3>
+                        <select class="bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-lg shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer" 
+                                onchange="actualizarRangoTiempo('exitoTendencia', this.value)">
                             <option value="mes">Último Mes</option>
                             <option value="trimestre">Último Trimestre</option>
                             <option value="anio">Último Año</option>
