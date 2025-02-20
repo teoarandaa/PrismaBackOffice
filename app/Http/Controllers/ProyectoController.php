@@ -14,31 +14,32 @@ class ProyectoController extends Controller
         return view('clientes.proyectos.index', compact('cliente', 'proyectos'));
     }
 
-    public function store(Request $request, Cliente $cliente)
+    public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'nombre' => 'required|string|max:255',
-            'descripcion' => 'nullable|string',
-            'fecha_inicio' => 'nullable|date',
-            'fecha_fin_estimada' => 'nullable|date',
+        $request->validate([
+            'nombre_proyecto' => 'required',
+            'id_cliente' => 'required|exists:clientes,id',
+            'tipo' => 'required|in:Web,App',
             'estado' => 'required|in:En progreso,Completado,Cancelado',
-            'tipo' => 'required|in:web,app',
+            'fecha_inicio' => 'nullable|date',
+            'fecha_finalizacion' => 'nullable|date',
             'presupuesto' => 'nullable|numeric',
-            'link' => 'nullable|string'
+            'link' => 'nullable|url'
         ]);
 
-        $proyecto = $cliente->proyectos()->create([
-            'nombre_proyecto' => $validatedData['nombre'],
-            'descripcion' => $validatedData['descripcion'],
-            'fecha_inicio' => $validatedData['fecha_inicio'],
-            'fecha_finalizacion' => $validatedData['fecha_fin_estimada'],
-            'estado' => $validatedData['estado'],
-            'tipo' => $validatedData['tipo'],
-            'presupuesto' => $validatedData['presupuesto'],
-            'link' => $validatedData['link']
-        ]);
+        $data = $request->all();
+        
+        // Si el estado es Completado, establecer la fecha de completado
+        if ($request->estado === 'Completado') {
+            $data['fecha_completado'] = now();
+        }
 
-        return response()->json(['message' => 'Proyecto creado correctamente']);
+        $proyecto = Proyecto::create($data);
+
+        return response()->json([
+            'message' => 'Proyecto creado correctamente',
+            'proyecto' => $proyecto
+        ]);
     }
 
     public function show(Cliente $cliente, Proyecto $proyecto)
@@ -48,57 +49,33 @@ class ProyectoController extends Controller
 
     public function update(Request $request, Cliente $cliente, Proyecto $proyecto)
     {
-        // Log de los datos recibidos
-        \Log::info('Datos recibidos en update:', $request->all());
+        $request->validate([
+            'nombre_proyecto' => 'required',
+            'tipo' => 'required|in:Web,App',
+            'estado' => 'required|in:En progreso,Completado,Cancelado',
+            'fecha_inicio' => 'nullable|date',
+            'fecha_finalizacion' => 'nullable|date',
+            'presupuesto' => 'nullable|numeric',
+            'link' => 'nullable|url'
+        ]);
 
-        try {
-            $validatedData = $request->validate([
-                'nombre' => 'required|string|max:255',
-                'descripcion' => 'nullable|string',
-                'fecha_inicio' => 'nullable|date',
-                'fecha_fin_estimada' => 'nullable|date',
-                'presupuesto' => 'nullable|numeric',
-                'estado' => ['required', 'string', 'in:En progreso,Completado,Cancelado'],
-                'tipo' => ['required', 'string', 'in:web,app'],
-                'link' => 'nullable|string'
-            ]);
+        $data = $request->all();
 
-            \Log::info('Datos validados:', $validatedData);
-
-            $proyecto->update([
-                'nombre_proyecto' => $validatedData['nombre'],
-                'descripcion' => $validatedData['descripcion'],
-                'fecha_inicio' => $validatedData['fecha_inicio'],
-                'fecha_finalizacion' => $validatedData['fecha_fin_estimada'],
-                'presupuesto' => $validatedData['presupuesto'],
-                'estado' => $validatedData['estado'],
-                'tipo' => $validatedData['tipo'],
-                'link' => $validatedData['link']
-            ]);
-
-            return response()->json([
-                'message' => 'Proyecto actualizado correctamente',
-                'proyecto' => $proyecto
-            ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::error('Error de validación:', [
-                'errors' => $e->errors(),
-                'request' => $request->all()
-            ]);
-            return response()->json([
-                'message' => 'Error de validación',
-                'errors' => $e->errors()
-            ], 422);
-        } catch (\Exception $e) {
-            \Log::error('Error al actualizar proyecto:', [
-                'message' => $e->getMessage(),
-                'request' => $request->all()
-            ]);
-            return response()->json([
-                'message' => 'Error al actualizar el proyecto',
-                'error' => $e->getMessage()
-            ], 500);
+        // Si el proyecto se marca como completado y no tenía fecha de completado
+        if ($request->estado === 'Completado' && !$proyecto->fecha_completado) {
+            $data['fecha_completado'] = now();
         }
+        // Si el proyecto deja de estar completado, eliminar la fecha de completado
+        elseif ($request->estado !== 'Completado') {
+            $data['fecha_completado'] = null;
+        }
+
+        $proyecto->update($data);
+
+        return response()->json([
+            'message' => 'Proyecto actualizado correctamente',
+            'proyecto' => $proyecto
+        ]);
     }
 
     public function destroy(Cliente $cliente, Proyecto $proyecto)
@@ -146,11 +123,15 @@ class ProyectoController extends Controller
     protected function validateProyecto(Request $request)
     {
         return $request->validate([
-            'nombre' => 'required|string|max:255',
-            'descripcion' => 'required|string',
+            'nombre_proyecto' => 'required|string|max:255',
+            'descripcion' => 'nullable|string',
             'estado' => 'required|in:En progreso,Completado,Cancelado',
-            'tipo' => 'required|in:web,app',
-            // ... otros campos existentes
+            'tipo' => 'required|in:Web,App',
+            'fecha_inicio' => 'nullable|date',
+            'fecha_finalizacion' => 'nullable|date',
+            'presupuesto' => 'nullable|numeric',
+            'link' => 'nullable|url',
+            'id_cliente' => 'required|exists:clientes,id'
         ]);
     }
 } 

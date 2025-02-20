@@ -66,8 +66,8 @@
                         <label for="tipo" class="block text-sm font-medium text-gray-700">Tipo de Proyecto</label>
                         <select id="tipo" name="tipo"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="web">Sitio Web</option>
-                            <option value="app">Aplicación</option>
+                            <option value="Web">Sitio Web</option>
+                            <option value="App">Aplicación</option>
                         </select>
                     </div>
 
@@ -93,14 +93,15 @@
             e.preventDefault();
             
             const formData = new FormData();
-            formData.append('nombre', document.getElementById('nombre').value);
+            formData.append('nombre_proyecto', document.getElementById('nombre').value);
             formData.append('descripcion', document.getElementById('descripcion').value);
             formData.append('fecha_inicio', document.getElementById('fecha_inicio').value);
-            formData.append('fecha_fin_estimada', document.getElementById('fecha_fin_estimada').value);
+            formData.append('fecha_finalizacion', document.getElementById('fecha_fin_estimada').value);
             formData.append('presupuesto', document.getElementById('presupuesto').value);
             formData.append('estado', document.getElementById('estado').value);
             formData.append('tipo', document.getElementById('tipo').value);
             formData.append('link', document.getElementById('link').value);
+            formData.append('id_cliente', '{{ $cliente->id }}');
             formData.append('_token', '{{ csrf_token() }}');
 
             fetch('{{ route("clientes.proyectos.store", $cliente) }}', {

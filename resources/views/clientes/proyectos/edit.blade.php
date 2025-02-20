@@ -66,8 +66,8 @@
                         <label for="tipo" class="block text-sm font-medium text-gray-700">Tipo de Proyecto</label>
                         <select id="tipo" name="tipo"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="web" {{ $proyecto->tipo === 'web' ? 'selected' : '' }}>Sitio Web</option>
-                            <option value="app" {{ $proyecto->tipo === 'app' ? 'selected' : '' }}>Aplicación</option>
+                            <option value="Web" {{ $proyecto->tipo === 'Web' ? 'selected' : '' }}>Sitio Web</option>
+                            <option value="App" {{ $proyecto->tipo === 'App' ? 'selected' : '' }}>Aplicación</option>
                         </select>
                     </div>
 
@@ -93,10 +93,10 @@
             e.preventDefault();
             
             const formData = {
-                nombre: document.getElementById('nombre').value,
+                nombre_proyecto: document.getElementById('nombre').value,
                 descripcion: document.getElementById('descripcion').value,
                 fecha_inicio: document.getElementById('fecha_inicio').value,
-                fecha_fin_estimada: document.getElementById('fecha_fin_estimada').value,
+                fecha_finalizacion: document.getElementById('fecha_fin_estimada').value,
                 presupuesto: document.getElementById('presupuesto').value,
                 estado: document.getElementById('estado').value,
                 tipo: document.getElementById('tipo').value,
@@ -106,7 +106,7 @@
 
             console.log('Datos a enviar:', formData);
 
-            fetch('{{ route("clientes.proyectos.update", [$cliente, $proyecto]) }}', {
+            fetch('/clientes/{{ $cliente->id }}/proyectos/{{ $proyecto->id }}', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
