@@ -20,9 +20,9 @@ class DashboardController extends Controller
         $tendencias = $this->obtenerDatosTendencias($rango);
 
         // Estadísticas de estado de proyectos
-        $proyectosActivos = Proyecto::where('estado', 'En Desarrollo')->count();
+        $proyectosActivos = Proyecto::where('estado', 'En Progreso')->count();
         $proyectosCompletados = Proyecto::where('estado', 'Completado')->count();
-        $proyectosEnDesarrollo = Proyecto::where('estado', 'En Desarrollo')->count();
+        $proyectosEnDesarrollo = Proyecto::where('estado', 'En Progreso')->count();
         $proyectosCancelados = Proyecto::where('estado', 'Cancelado')->count();
         $proyectosIniciados = Proyecto::whereNotNull('fecha_inicio')->count();
         
@@ -692,7 +692,7 @@ class DashboardController extends Controller
         } 
         else if ($grafico === 'estadoProyectos') {
             $datos = [
-                'en_progreso' => (int)$query->clone()->where('estado', 'En Desarrollo')->count(),
+                'en_progreso' => (int)$query->clone()->where('estado', 'En Progreso')->count(),
                 'completados' => (int)$query->clone()->where('estado', 'Completado')->count(),
                 'cancelados' => (int)$query->clone()->where('estado', 'Cancelado')->count()
             ];

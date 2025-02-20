@@ -100,8 +100,8 @@
                     <h3 class="text-blue-800 text-lg font-semibold mb-2">
                         <span>Proyectos Activos</span>
                     </h3>
-                    <p class="text-3xl font-bold text-blue-600">{{ $proyectosActivos }}</p>
-                    <p class="text-sm text-blue-600">En desarrollo</p>
+                    <p class="text-3xl font-bold text-blue-600">{{ $estadisticas['en_progreso'] }}</p>
+                    <p class="text-sm text-blue-600">En progreso</p>
                 </div>
                 
                 <div class="bg-green-50 p-6 rounded-lg cursor-pointer hover:bg-green-100 transition-colors"
@@ -433,7 +433,7 @@
             graficos.estados = new Chart(document.getElementById('estadoProyectos'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['En Progreso', 'Completados', 'Cancelados'],
+                    labels: ['En progreso', 'Completados', 'Cancelados'],
                     datasets: [{
                         data: [
                             {{ $estadisticas['en_progreso'] }}, 
