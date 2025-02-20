@@ -136,39 +136,38 @@ class DashboardController extends Controller
         return view('dashboard.top-clientes-detalle', compact('clientes'));
     }
 
-    public function presupuestosDetalle()
+    public function presupuestosDetalle(Request $request)
     {
-        // Estadísticas generales
         $estadisticas = [
             'apps' => [
                 'promedio' => Proyecto::where('tipo', 'app')->avg('presupuesto'),
-                'minimo' => Proyecto::where('tipo', 'app')->min('presupuesto'),
                 'maximo' => Proyecto::where('tipo', 'app')->max('presupuesto'),
-                'total' => Proyecto::where('tipo', 'app')->count(),
+                'minimo' => Proyecto::where('tipo', 'app')->min('presupuesto'),
                 'completados' => Proyecto::where('tipo', 'app')->where('estado', 'Completado')->count(),
+                'total' => Proyecto::where('tipo', 'app')->count(),
             ],
             'webs' => [
                 'promedio' => Proyecto::where('tipo', 'web')->avg('presupuesto'),
-                'minimo' => Proyecto::where('tipo', 'web')->min('presupuesto'),
                 'maximo' => Proyecto::where('tipo', 'web')->max('presupuesto'),
-                'total' => Proyecto::where('tipo', 'web')->count(),
+                'minimo' => Proyecto::where('tipo', 'web')->min('presupuesto'),
                 'completados' => Proyecto::where('tipo', 'web')->where('estado', 'Completado')->count(),
-            ]
+                'total' => Proyecto::where('tipo', 'web')->count(),
+            ],
         ];
 
-        // Últimos 5 proyectos de cada tipo
+        $ordenApps = $request->input('orden_apps', 'desc');
+        $ordenWebs = $request->input('orden_webs', 'desc');
+
         $ultimosProyectos = [
             'apps' => Proyecto::where('tipo', 'app')
-                ->orderBy('created_at', 'desc')
-                ->take(5)
-                ->get(),
+                             ->orderBy('presupuesto', $ordenApps)
+                             ->paginate(10, ['*'], 'pagina_apps'),
             'webs' => Proyecto::where('tipo', 'web')
-                ->orderBy('created_at', 'desc')
-                ->take(5)
-                ->get(),
+                             ->orderBy('presupuesto', $ordenWebs)
+                             ->paginate(10, ['*'], 'pagina_webs'),
         ];
 
-        return view('dashboard.presupuestos-detalle', compact('estadisticas', 'ultimosProyectos'));
+        return view('dashboard.presupuestos-detalle', compact('estadisticas', 'ultimosProyectos', 'ordenApps', 'ordenWebs'));
     }
 
     public function rendimientoDetalle()
