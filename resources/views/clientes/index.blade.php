@@ -8,15 +8,29 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Estilo para el select cuando está desplegado -->
     <style>
+        select#perPage {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-size: 0.875rem;
+        }
+
         select#perPage option {
-            font-family: 'Inter', sans-serif;
-            padding: 8px 12px;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            padding: 12px 16px;
             background-color: white;
-            color: #374151;
+            color: #4B5563;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
         
-        select#perPage option:hover {
-            background-color: #f3f4f6;
+        select#perPage option:hover,
+        select#perPage option:focus {
+            background-color: #F3F4F6;
+        }
+
+        select#perPage option:checked {
+            background-color: #E5E7EB;
+            color: #1F2937;
         }
     </style>
 </head>
@@ -206,7 +220,7 @@
                 <h2 class="text-lg font-semibold text-gray-700">Lista de Clientes</h2>
                 <div class="relative">
                     <select id="perPage" 
-                            class="appearance-none bg-white border border-gray-300 rounded-lg pl-4 pr-10 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer text-gray-700 text-sm font-medium hover:border-gray-400 transition-colors duration-200"
+                            class="appearance-none bg-white border border-gray-300 rounded-lg pl-4 pr-10 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer text-gray-700 hover:border-gray-400 transition-colors duration-200"
                             onchange="cambiarPaginacion(this.value)">
                         <option value="20" {{ request('per_page', 20) == 20 ? 'selected' : '' }}>20 registros por página</option>
                         <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 registros por página</option>
