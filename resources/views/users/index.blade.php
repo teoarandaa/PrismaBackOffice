@@ -62,7 +62,22 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Mensaje de no resultados -->
+        <div id="noResultados" class="{{ $users->where('id', '!=', 1)->count() === 0 ? '' : 'hidden' }}">
+            <div class="flex flex-col items-center justify-center py-12">
+                <div class="bg-gray-100 rounded-full p-4 mb-4">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-1">No se encontraron resultados</h3>
+                <p class="text-gray-500">No hay usuarios registrados en el sistema</p>
+            </div>
+        </div>
+
+        <!-- Grid de usuarios -->
+        <div id="gridUsuarios" class="{{ $users->where('id', '!=', 1)->count() === 0 ? 'hidden' : '' }} grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             @foreach($users as $user)
                 @if($user->id !== 1)
                     <div class="bg-white rounded-lg shadow-md p-6">
@@ -126,6 +141,16 @@
         document.getElementById('buscadorUsuarios').addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
             const cards = document.querySelectorAll('.grid > div');
+            const noResultados = document.getElementById('noResultados');
+            const gridUsuarios = document.getElementById('gridUsuarios');
+            let resultadosEncontrados = false;
+            
+            // Si no hay usuarios (excepto el admin), mostrar el mensaje
+            if (cards.length === 0) {
+                noResultados.classList.remove('hidden');
+                gridUsuarios.classList.add('hidden');
+                return;
+            }
             
             cards.forEach(card => {
                 const name = card.querySelector('h2').textContent.toLowerCase();
@@ -133,10 +158,20 @@
                 
                 if (name.includes(searchTerm) || email.includes(searchTerm)) {
                     card.style.display = '';
+                    resultadosEncontrados = true;
                 } else {
                     card.style.display = 'none';
                 }
             });
+
+            // Mostrar/ocultar mensaje de no resultados
+            if (resultadosEncontrados) {
+                noResultados.classList.add('hidden');
+                gridUsuarios.classList.remove('hidden');
+            } else {
+                noResultados.classList.remove('hidden');
+                gridUsuarios.classList.add('hidden');
+            }
         });
     </script>
 </body>
