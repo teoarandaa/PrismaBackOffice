@@ -102,7 +102,21 @@
             </div>
         </div>
 
-        <!-- Mensaje de no resultados -->
+        <!-- Mensaje de no proyectos -->
+        <div id="noProyectos" class="{{ count($proyectos) === 0 ? '' : 'hidden' }}">
+            <div class="flex flex-col items-center justify-center py-12">
+                <div class="bg-gray-100 rounded-full p-4 mb-4">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-1">No hay proyectos</h3>
+                <p class="text-gray-500">No hay proyectos registrados en el sistema</p>
+            </div>
+        </div>
+
+        <!-- Mensaje de no resultados de búsqueda -->
         <div id="noResultados" class="hidden">
             <div class="flex flex-col items-center justify-center py-12">
                 <div class="bg-gray-100 rounded-full p-4 mb-4">
@@ -117,7 +131,7 @@
         </div>
 
         <!-- Tabla de proyectos -->
-        <div id="tablaProyectos" class="bg-white shadow-md rounded-lg overflow-hidden">
+        <div id="tablaProyectos" class="{{ count($proyectos) === 0 ? 'hidden' : '' }} bg-white shadow-md rounded-lg overflow-hidden">
             <table class="min-w-full">
                 <thead class="bg-gray-50">
                     <tr>
@@ -271,16 +285,27 @@
                 if (mostrar) resultadosEncontrados = true;
             });
             
-            // Actualizar la visibilidad de la tabla y el mensaje de no resultados
+            // Actualizar la visibilidad de la tabla y los mensajes
             const noResultados = document.getElementById('noResultados');
+            const noProyectos = document.getElementById('noProyectos');
             const tablaProyectos = document.getElementById('tablaProyectos');
+            const hayProyectos = document.querySelectorAll('tbody tr').length > 0;
             
-            if (resultadosEncontrados) {
-                noResultados.style.display = 'none';
-                tablaProyectos.style.display = '';
+            if (!hayProyectos) {
+                // Si no hay proyectos en absoluto
+                noProyectos.classList.remove('hidden');
+                noResultados.classList.add('hidden');
+                tablaProyectos.classList.add('hidden');
+            } else if (resultadosEncontrados) {
+                // Si hay proyectos y se encontraron resultados
+                noProyectos.classList.add('hidden');
+                noResultados.classList.add('hidden');
+                tablaProyectos.classList.remove('hidden');
             } else {
-                noResultados.style.display = 'block';
-                tablaProyectos.style.display = 'none';
+                // Si hay proyectos pero no se encontraron resultados con los filtros
+                noProyectos.classList.add('hidden');
+                noResultados.classList.remove('hidden');
+                tablaProyectos.classList.add('hidden');
             }
             
             // Ordenar las filas
