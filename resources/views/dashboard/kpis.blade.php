@@ -221,15 +221,28 @@
                             Ver detalles →
                         </a>
                     </h3>
-                    <div class="space-y-3">
-                        @foreach($topClientes as $cliente)
-                        <div class="flex justify-between items-center hover:bg-gray-50 p-2 rounded cursor-pointer"
-                             onclick="window.location.href='{{ route('dashboard.top-clientes') }}'">
-                            <span class="text-gray-600">{{ $cliente->nombre }} {{ $cliente->apellido }}</span>
-                            <span class="font-semibold">{{ $cliente->total_proyectos }} proyectos</span>
+                    @if(count($topClientes) > 0)
+                        <div class="space-y-3">
+                            @foreach($topClientes as $cliente)
+                            <div class="flex justify-between items-center hover:bg-gray-50 p-2 rounded cursor-pointer"
+                                 onclick="window.location.href='{{ route('dashboard.top-clientes') }}'">
+                                <span class="text-gray-600">{{ $cliente->nombre }} {{ $cliente->apellido }}</span>
+                                <span class="font-semibold">{{ $cliente->total_proyectos }} proyectos</span>
+                            </div>
+                            @endforeach
                         </div>
-                        @endforeach
-                    </div>
+                    @else
+                        <div class="flex flex-col items-center justify-center py-6 text-center">
+                            <div class="bg-gray-100 rounded-full p-3 mb-3">
+                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                            </div>
+                            <h4 class="text-sm font-medium text-gray-900 mb-1">No hay datos disponibles</h4>
+                            <p class="text-xs text-gray-500">Aún no hay clientes con proyectos registrados</p>
+                        </div>
+                    @endif
                 </div>
 
                 <div class="bg-white p-6 rounded-lg shadow">
