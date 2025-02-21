@@ -138,15 +138,23 @@ class ImportController extends Controller
                 return;
             }
 
-            // Debug para ver la estructura de datos
-            \Log::info('Datos del proyecto:', $datosProyecto);
+            // Primero crear el cliente si no existe
+            $cliente = Cliente::firstOrCreate(
+                ['id' => $datosProyecto['ID Cliente']],
+                [
+                    'nombre' => 'Cliente Temporal',
+                    'email' => 'cliente_' . $datosProyecto['ID Cliente'] . '@temporal.com',
+                    'empresa' => 'Empresa Temporal'
+                ]
+            );
 
+            // Buscar por ID del proyecto
             $proyecto = Proyecto::updateOrCreate(
                 [
-                    'id' => $datosProyecto['ID'],
-                    'id_cliente' => $datosProyecto['ID Cliente']
+                    'id' => $datosProyecto['ID']
                 ],
                 [
+                    'id_cliente' => $cliente->id,
                     'nombre_proyecto' => $datosProyecto['Nombre'],
                     'descripcion' => $datosProyecto['Descripción'] ?? null,
                     'tipo' => $datosProyecto['Tipo'] ?? 'web',
@@ -167,7 +175,6 @@ class ImportController extends Controller
                 $resumen['proyectos']['actualizados']++;
             }
         } catch (\Exception $e) {
-            // Añadir más detalles al error para diagnóstico
             $resumen['errores'][] = "Error procesando proyecto: " . implode(',', $datos) . 
                 " - Error: " . $e->getMessage();
             \Log::error('Error procesando proyecto:', [
