@@ -660,51 +660,53 @@ class DashboardController extends Controller
         $rango = $request->get('rango', 'mes');
         $grafico = $request->get('grafico');
         
-        $query = Proyecto::query();
+        // Obtener las tendencias para todos los gráficos
+        $tendencias = $this->obtenerDatosTendencias($rango);
         
-        // Aplicar filtro de fecha según el rango
-        switch($rango) {
-            case 'mes':
-                $query->whereMonth('created_at', now()->month)
-                      ->whereYear('created_at', now()->year);
+        $datos = [];
+        
+        switch($grafico) {
+            case 'tipoProyectos':
+                $query = Proyecto::query();
+                if ($rango !== 'general') {
+                    $query->where('created_at', '>=', $this->obtenerFechaInicio($rango));
+                }
+                $datos = [
+                    'apps' => (int)$query->clone()->where('tipo', 'app')->count(),
+                    'webs' => (int)$query->clone()->where('tipo', 'web')->count()
+                ];
                 break;
-            case 'trimestre':
-                $query->where('created_at', '>=', now()->subMonths(3));
+                
+            case 'estadoProyectos':
+                $query = Proyecto::query();
+                if ($rango !== 'general') {
+                    $query->where('created_at', '>=', $this->obtenerFechaInicio($rango));
+                }
+                $datos = [
+                    'en_progreso' => (int)$query->clone()->where('estado', 'En Progreso')->count(),
+                    'completados' => (int)$query->clone()->where('estado', 'Completado')->count(),
+                    'cancelados' => (int)$query->clone()->where('estado', 'Cancelado')->count()
+                ];
                 break;
-            case 'anio':
-                $query->where('created_at', '>=', now()->subYear());
+                
+            case 'ingresosTendencia':
+            case 'tiempoTendencia':
+            case 'exitoTendencia':
+                $datos = $tendencias;
                 break;
-            // 'general' no necesita filtro de fecha
         }
-        
-        // Debug: Imprimir la consulta SQL
-        \Log::info("SQL Query: " . $query->toSql());
-        \Log::info("SQL Bindings: " . json_encode($query->getBindings()));
-        
-        if ($grafico === 'tipoProyectos') {
-            $datos = [
-                'apps' => (int)$query->clone()->where('tipo', 'app')->count(),
-                'webs' => (int)$query->clone()->where('tipo', 'web')->count()
-            ];
-            
-            // Debug
-            \Log::info("Datos tipo proyectos: " . json_encode($datos));
-        } 
-        else if ($grafico === 'estadoProyectos') {
-            $datos = [
-                'en_progreso' => (int)$query->clone()->where('estado', 'En Progreso')->count(),
-                'completados' => (int)$query->clone()->where('estado', 'Completado')->count(),
-                'cancelados' => (int)$query->clone()->where('estado', 'Cancelado')->count()
-            ];
-            
-            // Debug
-            \Log::info("Datos estado proyectos: " . json_encode($datos));
-        }
-        
-        // Debug: Imprimir datos finales
-        \Log::info("Datos enviados: " . json_encode($datos));
         
         return response()->json($datos);
+    }
+
+    private function obtenerFechaInicio($rango)
+    {
+        return match($rango) {
+            'mes' => now()->startOfMonth(),
+            'trimestre' => now()->subMonths(3),
+            'anio' => now()->subYear(),
+            default => null
+        };
     }
 
     public function ingresosPorMes($mes, $año)

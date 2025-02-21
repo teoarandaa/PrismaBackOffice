@@ -456,7 +456,6 @@
                 
                 const response = await fetch(`{{ route('dashboard.estadisticas') }}?grafico=${graficoId}&rango=${rango}`);
                 if (!response.ok) {
-                    console.error('Error en la respuesta:', response.status, response.statusText);
                     throw new Error('Error en la respuesta del servidor');
                 }
                 
@@ -467,32 +466,30 @@
                 switch(graficoId) {
                     case 'tipoProyectos':
                         grafico = graficos.tipos;
-                        console.log('Actualizando datos de tipo proyectos:', [datos.apps, datos.webs]);
                         grafico.data.datasets[0].data = [datos.apps, datos.webs];
                         break;
+                        
                     case 'estadoProyectos':
                         grafico = graficos.estados;
-                        console.log('Actualizando datos de estado proyectos:', [
-                            datos.en_progreso,
-                            datos.completados,
-                            datos.cancelados
-                        ]);
                         grafico.data.datasets[0].data = [
                             datos.en_progreso,
                             datos.completados,
                             datos.cancelados
                         ];
                         break;
+                        
                     case 'ingresosTendencia':
                         grafico = graficos.ingresos;
                         grafico.data.labels = datos.meses;
                         grafico.data.datasets[0].data = datos.ingresos;
                         break;
+                        
                     case 'tiempoTendencia':
                         grafico = graficos.tiempo;
                         grafico.data.labels = datos.meses;
                         grafico.data.datasets[0].data = datos.tiempos;
                         break;
+                        
                     case 'exitoTendencia':
                         grafico = graficos.exito;
                         grafico.data.labels = datos.meses;
@@ -503,8 +500,6 @@
                 if (grafico) {
                     grafico.update();
                     console.log('Gráfico actualizado:', graficoId);
-                } else {
-                    console.error('No se encontró el gráfico:', graficoId);
                 }
             } catch (error) {
                 console.error('Error al actualizar el gráfico:', error);
