@@ -137,19 +137,22 @@
             </div>
         </div>
 
-        <div class="bg-white shadow-md rounded-lg overflow-hidden">
-            <div id="noResultados" class="hidden">
-                <div class="flex flex-col items-center justify-center py-12">
-                    <div class="bg-gray-100 rounded-full p-4 mb-4">
-                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
-                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-1">No se encontraron resultados</h3>
-                    <p class="text-gray-500">Prueba con otros términos de búsqueda o filtros</p>
+        <!-- Mensaje de no resultados -->
+        <div id="noResultados" class="hidden">
+            <div class="flex flex-col items-center justify-center py-12">
+                <div class="bg-gray-100 rounded-full p-4 mb-4">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
                 </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-1">No se encontraron resultados</h3>
+                <p class="text-gray-500">Prueba con otros términos de búsqueda o filtros</p>
             </div>
+        </div>
+
+        <!-- Tabla de proyectos -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden" id="tablaProyectos">
             <table class="min-w-full">
                 <thead class="bg-gray-50">
                     <tr>
@@ -342,9 +345,9 @@
             const tbody = document.querySelector('tbody');
             rowsArray.forEach(row => tbody.appendChild(row));
 
-            // Mostrar/ocultar mensaje de no resultados
+            // Actualizar la visibilidad de la tabla y el mensaje de no resultados
             const noResultados = document.getElementById('noResultados');
-            const tablaProyectos = document.querySelector('.bg-white.shadow-md.rounded-lg.overflow-hidden');
+            const tablaProyectos = document.getElementById('tablaProyectos');
             
             if (resultadosEncontrados) {
                 noResultados.classList.add('hidden');
