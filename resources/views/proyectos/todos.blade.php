@@ -58,6 +58,30 @@
                                 </select>
                             </div>
                             <div class="p-4">
+                                <h3 class="text-sm font-medium text-gray-900 mb-3">Rango fecha de inicio</h3>
+                                <div class="flex gap-2 items-center">
+                                    <input type="date" id="fechaInicioMin" class="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <span class="text-gray-500">-</span>
+                                    <input type="date" id="fechaInicioMax" class="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            <div class="p-4">
+                                <h3 class="text-sm font-medium text-gray-900 mb-3">Rango fecha de finalización</h3>
+                                <div class="flex gap-2 items-center">
+                                    <input type="date" id="fechaFinMin" class="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <span class="text-gray-500">-</span>
+                                    <input type="date" id="fechaFinMax" class="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            <div class="p-4">
+                                <h3 class="text-sm font-medium text-gray-900 mb-3">Rango fecha de completado</h3>
+                                <div class="flex gap-2 items-center">
+                                    <input type="date" id="fechaCompletadoMin" class="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <span class="text-gray-500">-</span>
+                                    <input type="date" id="fechaCompletadoMax" class="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            <div class="p-4">
                                 <h3 class="text-sm font-medium text-gray-900 mb-3">Rango de presupuesto</h3>
                                 <div class="flex gap-2 items-center">
                                     <input type="number" id="presupuestoMin" placeholder="Mínimo" 
@@ -68,24 +92,17 @@
                                 </div>
                             </div>
                             <div class="p-4">
-                                <h3 class="text-sm font-medium text-gray-900 mb-3">Rango de fechas</h3>
-                                <div class="flex gap-2 items-center">
-                                    <input type="date" id="fechaInicio"
-                                           class="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <span class="text-gray-500">-</span>
-                                    <input type="date" id="fechaFin"
-                                           class="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                </div>
-                            </div>
-                            <div class="p-4">
                                 <h3 class="text-sm font-medium text-gray-900 mb-3">Ordenar por</h3>
-                                <select id="filtroOrden" 
-                                        class="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="recientes">Más recientes</option>
-                                    <option value="antiguos">Más antiguos</option>
+                                <select id="filtroOrden" class="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="nombre" selected>Nombre del proyecto</option>
+                                    <option value="fecha_completado_desc">Fecha completado (más reciente)</option>
+                                    <option value="fecha_completado_asc">Fecha completado (más antiguo)</option>
+                                    <option value="fecha_fin_desc">Fecha fin (más reciente)</option>
+                                    <option value="fecha_fin_asc">Fecha fin (más antiguo)</option>
+                                    <option value="fecha_inicio_desc">Fecha inicio (más reciente)</option>
+                                    <option value="fecha_inicio_asc">Fecha inicio (más antiguo)</option>
                                     <option value="presupuesto_alto">Mayor presupuesto</option>
                                     <option value="presupuesto_bajo">Menor presupuesto</option>
-                                    <option value="nombre">Nombre del proyecto</option>
                                     <option value="cliente">Nombre del cliente</option>
                                 </select>
                             </div>
@@ -269,16 +286,32 @@
                              (!presupuestoMax || presupuesto <= presupuestoMax);
                 }
 
-                // Filtro de fecha
-                const fechaInicioFiltro = document.getElementById('fechaInicio').value;
-                const fechaFinFiltro = document.getElementById('fechaFin').value;
-                if (mostrar && fechaInicioDate && (fechaInicioFiltro || fechaFinFiltro)) {
-                    const fechaMinima = new Date(fechaInicioFiltro);
-                    mostrar = fechaInicioDate >= fechaMinima;
-                    if (fechaFinFiltro && mostrar) {
-                        const fechaMaxima = new Date(fechaFinFiltro);
-                        mostrar = fechaInicioDate <= fechaMaxima;
-                    }
+                // Filtros de fecha de inicio
+                const fechaInicioMin = document.getElementById('fechaInicioMin').value;
+                const fechaInicioMax = document.getElementById('fechaInicioMax').value;
+                if (mostrar && fechaInicioDate && (fechaInicioMin || fechaInicioMax)) {
+                    if (fechaInicioMin) mostrar = fechaInicioDate >= new Date(fechaInicioMin);
+                    if (fechaInicioMax && mostrar) mostrar = fechaInicioDate <= new Date(fechaInicioMax);
+                }
+
+                // Filtros de fecha de fin
+                const fechaFinTexto = row.querySelector('td:nth-child(5)').textContent.trim();
+                const fechaFinDate = fechaFinTexto !== 'No definida' ? new Date(fechaFinTexto.split('/').reverse().join('-')) : null;
+                const fechaFinMin = document.getElementById('fechaFinMin').value;
+                const fechaFinMax = document.getElementById('fechaFinMax').value;
+                if (mostrar && fechaFinDate && (fechaFinMin || fechaFinMax)) {
+                    if (fechaFinMin) mostrar = fechaFinDate >= new Date(fechaFinMin);
+                    if (fechaFinMax && mostrar) mostrar = fechaFinDate <= new Date(fechaFinMax);
+                }
+
+                // Filtros de fecha de completado
+                const fechaCompletadoTexto = row.querySelector('td:nth-child(7)').textContent.trim();
+                const fechaCompletadoDate = fechaCompletadoTexto !== '-' ? new Date(fechaCompletadoTexto.split('/').reverse().join('-')) : null;
+                const fechaCompletadoMin = document.getElementById('fechaCompletadoMin').value;
+                const fechaCompletadoMax = document.getElementById('fechaCompletadoMax').value;
+                if (mostrar && fechaCompletadoDate && (fechaCompletadoMin || fechaCompletadoMax)) {
+                    if (fechaCompletadoMin) mostrar = fechaCompletadoDate >= new Date(fechaCompletadoMin);
+                    if (fechaCompletadoMax && mostrar) mostrar = fechaCompletadoDate <= new Date(fechaCompletadoMax);
                 }
 
                 row.style.display = mostrar ? '' : 'none';
@@ -313,21 +346,39 @@
             const rowsArray = Array.from(rows);
             
             rowsArray.sort((a, b) => {
-                switch(document.getElementById('filtroOrden').value) {
-                    case 'recientes':
-                        const fechaB = b.querySelector('td:nth-child(4)').textContent.trim();
+                const orden = document.getElementById('filtroOrden').value;
+                
+                switch(orden) {
+                    case 'fecha_completado_desc':
+                    case 'fecha_completado_asc': {
+                        const fechaA = a.querySelector('td:nth-child(7)').textContent.trim();
+                        const fechaB = b.querySelector('td:nth-child(7)').textContent.trim();
+                        if (fechaA === '-' && fechaB === '-') return 0;
+                        if (fechaA === '-') return orden.includes('desc') ? 1 : -1;
+                        if (fechaB === '-') return orden.includes('desc') ? -1 : 1;
+                        const comparison = new Date(fechaB.split('/').reverse().join('-')) - new Date(fechaA.split('/').reverse().join('-'));
+                        return orden.includes('desc') ? comparison : -comparison;
+                    }
+                    case 'fecha_fin_desc':
+                    case 'fecha_fin_asc': {
+                        const fechaA = a.querySelector('td:nth-child(5)').textContent.trim();
+                        const fechaB = b.querySelector('td:nth-child(5)').textContent.trim();
+                        if (fechaA === 'No definida' && fechaB === 'No definida') return 0;
+                        if (fechaA === 'No definida') return orden.includes('desc') ? 1 : -1;
+                        if (fechaB === 'No definida') return orden.includes('desc') ? -1 : 1;
+                        const comparison = new Date(fechaB.split('/').reverse().join('-')) - new Date(fechaA.split('/').reverse().join('-'));
+                        return orden.includes('desc') ? comparison : -comparison;
+                    }
+                    case 'fecha_inicio_desc':
+                    case 'fecha_inicio_asc': {
                         const fechaA = a.querySelector('td:nth-child(4)').textContent.trim();
-                        if (fechaB === 'No definida') return 1;
-                        if (fechaA === 'No definida') return -1;
-                        return new Date(fechaB.split('/').reverse().join('-')) - 
-                               new Date(fechaA.split('/').reverse().join('-'));
-                    case 'antiguos':
-                        const fechaB2 = b.querySelector('td:nth-child(4)').textContent.trim();
-                        const fechaA2 = a.querySelector('td:nth-child(4)').textContent.trim();
-                        if (fechaB2 === 'No definida') return -1;
-                        if (fechaA2 === 'No definida') return 1;
-                        return new Date(fechaA2.split('/').reverse().join('-')) - 
-                               new Date(fechaB2.split('/').reverse().join('-'));
+                        const fechaB = b.querySelector('td:nth-child(4)').textContent.trim();
+                        if (fechaA === 'No definida' && fechaB === 'No definida') return 0;
+                        if (fechaA === 'No definida') return orden.includes('desc') ? 1 : -1;
+                        if (fechaB === 'No definida') return orden.includes('desc') ? -1 : 1;
+                        const comparison = new Date(fechaB.split('/').reverse().join('-')) - new Date(fechaA.split('/').reverse().join('-'));
+                        return orden.includes('desc') ? comparison : -comparison;
+                    }
                     case 'presupuesto_alto':
                         return parseFloat(b.querySelector('td:nth-child(6)').textContent.replace('€', '').replace('.', '').replace(',', '.')) - 
                                parseFloat(a.querySelector('td:nth-child(6)').textContent.replace('€', '').replace('.', '').replace(',', '.'));
@@ -351,8 +402,12 @@
         document.getElementById('filtroEstado').addEventListener('change', aplicarFiltros);
         document.getElementById('presupuestoMin').addEventListener('input', aplicarFiltros);
         document.getElementById('presupuestoMax').addEventListener('input', aplicarFiltros);
-        document.getElementById('fechaInicio').addEventListener('change', aplicarFiltros);
-        document.getElementById('fechaFin').addEventListener('change', aplicarFiltros);
+        document.getElementById('fechaInicioMin').addEventListener('change', aplicarFiltros);
+        document.getElementById('fechaInicioMax').addEventListener('change', aplicarFiltros);
+        document.getElementById('fechaFinMin').addEventListener('change', aplicarFiltros);
+        document.getElementById('fechaFinMax').addEventListener('change', aplicarFiltros);
+        document.getElementById('fechaCompletadoMin').addEventListener('change', aplicarFiltros);
+        document.getElementById('fechaCompletadoMax').addEventListener('change', aplicarFiltros);
         document.getElementById('filtroOrden').addEventListener('change', aplicarFiltros);
 
         // Aplicar filtros iniciales
@@ -363,9 +418,13 @@
             document.getElementById('filtroEstado').value = 'todos';
             document.getElementById('presupuestoMin').value = '';
             document.getElementById('presupuestoMax').value = '';
-            document.getElementById('fechaInicio').value = '';
-            document.getElementById('fechaFin').value = '';
-            document.getElementById('filtroOrden').value = 'recientes';
+            document.getElementById('fechaInicioMin').value = '';
+            document.getElementById('fechaInicioMax').value = '';
+            document.getElementById('fechaFinMin').value = '';
+            document.getElementById('fechaFinMax').value = '';
+            document.getElementById('fechaCompletadoMin').value = '';
+            document.getElementById('fechaCompletadoMax').value = '';
+            document.getElementById('filtroOrden').value = 'nombre';
             aplicarFiltros();
         }
 
