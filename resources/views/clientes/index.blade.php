@@ -187,7 +187,7 @@
         @endif
 
         <!-- Mensaje de no resultados -->
-        <div id="noResultados" class="hidden col-span-full">
+        <div id="noResultados" class="{{ $clientes->count() === 0 ? '' : 'hidden' }}">
             <div class="flex flex-col items-center justify-center py-12">
                 <div class="bg-gray-100 rounded-full p-4 mb-4">
                     <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -196,12 +196,12 @@
                     </svg>
                 </div>
                 <h3 class="text-lg font-medium text-gray-900 mb-1">No se encontraron resultados</h3>
-                <p class="text-gray-500">Prueba con otros términos de búsqueda o filtros</p>
+                <p class="text-gray-500">No hay clientes registrados en el sistema</p>
             </div>
         </div>
 
         <!-- Tabla de clientes -->
-        <div id="tablaClientes" class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div id="tablaClientes" class="{{ $clientes->count() === 0 ? 'hidden' : '' }} bg-white rounded-lg shadow-md overflow-hidden">
             <div class="flex justify-between items-center p-4 border-b">
                 <h2 class="text-lg font-semibold text-gray-700">Lista de Clientes</h2>
                 <div class="relative">
@@ -358,7 +358,7 @@
                 if (mostrar) resultadosEncontrados = true;
             });
 
-            // Mostrar/ocultar tabla y mensaje de no resultados
+            // Actualizar la visibilidad de la tabla y el mensaje de no resultados
             const noResultados = document.getElementById('noResultados');
             const tablaClientes = document.getElementById('tablaClientes');
             
