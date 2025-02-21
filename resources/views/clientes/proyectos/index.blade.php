@@ -164,7 +164,16 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @foreach($proyectos as $proyecto)
-                    <tr data-proyecto-id="{{ $proyecto->id }}" class="hover:bg-gray-50">
+                    <tr data-proyecto="{{ json_encode([
+                        'id' => $proyecto->id,
+                        'nombre' => $proyecto->nombre_proyecto,
+                        'descripcion' => $proyecto->descripcion,
+                        'estado' => $proyecto->estado,
+                        'fecha_inicio' => $proyecto->fecha_inicio,
+                        'fecha_finalizacion' => $proyecto->fecha_finalizacion,
+                        'fecha_completado' => $proyecto->fecha_completado,
+                        'presupuesto' => $proyecto->presupuesto
+                    ]) }}" data-proyecto-id="{{ $proyecto->id }}" class="hover:bg-gray-50">
                         <td class="px-4 py-3 text-center text-sm text-gray-500">
                             <div class="text-sm font-medium text-gray-900">{{ $proyecto->nombre_proyecto }}</div>
                             <div class="text-sm text-gray-500">{{ Str::limit($proyecto->descripcion, 50) }}</div>
@@ -268,7 +277,7 @@
             const rowsArray = Array.from(rows);
 
             rowsArray.forEach(row => {
-                const proyectoData = JSON.parse(row.dataset.proyecto);
+                const proyectoData = JSON.parse(row.getAttribute('data-proyecto'));
                 let mostrar = true;
 
                 // Filtro de búsqueda por nombre
@@ -282,12 +291,12 @@
                 }
 
                 // Filtros de fechas
-                if (fechaInicioMin && new Date(proyectoData.fecha_inicio) < new Date(fechaInicioMin)) mostrar = false;
-                if (fechaInicioMax && new Date(proyectoData.fecha_inicio) > new Date(fechaInicioMax)) mostrar = false;
-                if (fechaFinMin && new Date(proyectoData.fecha_finalizacion) < new Date(fechaFinMin)) mostrar = false;
-                if (fechaFinMax && new Date(proyectoData.fecha_finalizacion) > new Date(fechaFinMax)) mostrar = false;
-                if (fechaCompletadoMin && new Date(proyectoData.fecha_completado) < new Date(fechaCompletadoMin)) mostrar = false;
-                if (fechaCompletadoMax && new Date(proyectoData.fecha_completado) > new Date(fechaCompletadoMax)) mostrar = false;
+                if (fechaInicioMin && proyectoData.fecha_inicio && new Date(proyectoData.fecha_inicio) < new Date(fechaInicioMin)) mostrar = false;
+                if (fechaInicioMax && proyectoData.fecha_inicio && new Date(proyectoData.fecha_inicio) > new Date(fechaInicioMax)) mostrar = false;
+                if (fechaFinMin && proyectoData.fecha_finalizacion && new Date(proyectoData.fecha_finalizacion) < new Date(fechaFinMin)) mostrar = false;
+                if (fechaFinMax && proyectoData.fecha_finalizacion && new Date(proyectoData.fecha_finalizacion) > new Date(fechaFinMax)) mostrar = false;
+                if (fechaCompletadoMin && proyectoData.fecha_completado && new Date(proyectoData.fecha_completado) < new Date(fechaCompletadoMin)) mostrar = false;
+                if (fechaCompletadoMax && proyectoData.fecha_completado && new Date(proyectoData.fecha_completado) > new Date(fechaCompletadoMax)) mostrar = false;
 
                 // Filtro de presupuesto
                 if (proyectoData.presupuesto < presupuestoMin || proyectoData.presupuesto > presupuestoMax) {
@@ -300,8 +309,8 @@
 
             // Ordenación
             rowsArray.sort((a, b) => {
-                const dataA = JSON.parse(a.dataset.proyecto);
-                const dataB = JSON.parse(b.dataset.proyecto);
+                const dataA = JSON.parse(a.getAttribute('data-proyecto'));
+                const dataB = JSON.parse(b.getAttribute('data-proyecto'));
 
                 switch(filtroOrden) {
                     case 'nombre_asc':
