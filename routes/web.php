@@ -8,6 +8,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ImportController;
+use App\Http\Controllers\CalendarioController;
 
 // Rutas de autenticación
 Route::middleware('guest')->group(function () {
@@ -95,4 +96,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/estadisticas', [DashboardController::class, 'obtenerEstadisticasGraficos'])->name('dashboard.estadisticas');
     Route::get('/dashboard/ingresos/mes/{mes}/{año}', [DashboardController::class, 'ingresosPorMes'])->name('dashboard.ingresos.mes');
     Route::get('/dashboard/ingresos/export', [DashboardController::class, 'exportarIngresos'])->name('dashboard.ingresos.export');
+
+    Route::get('/calendario-proyectos', [CalendarioController::class, 'index'])
+        ->name('calendario.proyectos')
+        ->middleware(['auth']);
 });
